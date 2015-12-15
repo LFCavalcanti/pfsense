@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-12-08 21:16-0200\n"
-"PO-Revision-Date: 2015-12-08 21:18-0200\n"
+"PO-Revision-Date: 2015-12-14 22:00-0200\n"
 "Last-Translator: Luiz Gustavo <luizgustavo@luizgustavo.pro.br>\n"
 "Language-Team: Powered By: TrustUX Network <www.trustux.com>\n"
 "Language: pt_BR\n"
@@ -31,11 +31,15 @@ msgid " is not an array"
 msgstr "não é um array"
 
 #: etc/inc/auth.inc:106
+#, fuzzy
 msgid ""
 "Potential DNS Rebind attack detected, see http://en.wikipedia.org/wiki/"
 "DNS_rebinding<br />Try accessing the router by IP address instead of by "
 "hostname."
 msgstr ""
+"Foi detectado um potencial ataque de DNS Rebind, veja mais em http://en."
+"wikipedia.org/wiki/DNS_rebinding<br /> Tente acessar o roteador pelo IP em "
+"vez do hostname."
 
 #: etc/inc/auth.inc:121
 msgid "Redirecting..."
@@ -101,24 +105,26 @@ msgid "ERROR! ldap_get_groups() could not bind to server %s."
 msgstr "ERRO! ldap_get_groups() não foi possível vincular ao servidor %s."
 
 #: etc/inc/auth.inc:1072
+#, fuzzy
 msgid ""
 "ERROR! ldap_backed() called with no LDAP authentication server defined.  "
 "Defaulting to local user database. Visit System -> User Manager."
 msgstr ""
-"ERRO! ldap_backed() nenhum chamado com servidor de autenticação LDAP foi "
-"definido. Padronizando o banco de dados do usuário local. Visite Sistema -> "
-"Gerenciador de Usuário."
+"ERRO! ldap_backed() chamado sem nenhum servidor de autenticação LDAP "
+"definido. Usando como padrão o banco de dados do usuário local. Veja Sistema "
+"-> Gerenciador de Usuário."
 
 #: etc/inc/auth.inc:1075
+#, fuzzy
 msgid "ERROR! ldap_backed() called with no LDAP authentication server defined."
 msgstr ""
-"ERRO! ldap_backed() nenhum chamado com servidor de autenticação LDAP foi "
-"definido."
+"ERRO! ldap_backed() chamado sem nenhum servidor de autenticação LDAP "
+"definido. "
 
 #: etc/inc/auth.inc:1109
 #, php-format
 msgid "ERROR! Could not bind to server %s."
-msgstr "ERRO! Não foi possível vincular ao servidor %s."
+msgstr "ERRO! Não foi possível vincular-se ao servidor %s."
 
 #: etc/inc/auth.inc:1127
 #, php-format
@@ -137,12 +143,13 @@ msgstr "A busca resultou em erro: %s"
 
 #: etc/inc/auth.inc:1162
 msgid "ERROR! Either LDAP search failed, or multiple users were found."
-msgstr "ERRO! Ou a busca LDAP falhou, ou múltiplos usuários foram encontrados."
+msgstr "ERRO! A busca LDAP falhou ou múltiplos usuários foram encontrados."
 
 #: etc/inc/auth.inc:1169
-#, fuzzy, php-format
+#, php-format
 msgid "ERROR! Could not login to server %1$s as user %2$s: %3$s"
-msgstr "ERRO! Não foi possível logar no servidor %1$s como usuário %2$s."
+msgstr ""
+"ERRO! Não foi possível autenticar no servidor %1$s como usuário %2$s: %3$s"
 
 #: etc/inc/auth.inc:1176
 #, php-format
@@ -151,14 +158,14 @@ msgstr ""
 "Autenticado com sucesso como %1$s via servidor LDAP %2$s com DN = %3$s."
 
 #: etc/inc/auth.inc:1211
-#, php-format
+#, fuzzy, php-format
 msgid "Radius start: %s<br />\n"
-msgstr ""
+msgstr "Inicialização Radius: %s<br />\n"
 
 #: etc/inc/auth.inc:1222
-#, php-format
+#, fuzzy, php-format
 msgid "Radius send failed: %s<br />\n"
-msgstr ""
+msgstr "Envio Radius falhou: %s<br />\n"
 
 #: etc/inc/auth.inc:1228
 #, php-format
@@ -180,12 +187,12 @@ msgid "Successful login for user '%1$s' from: %2$s"
 msgstr "Login bem sucedido para o usuário '%1$s' de: %2$s"
 
 #: etc/inc/auth.inc:1433
-#, php-format
+#, fuzzy, php-format
 msgid "Session timed out for user '%1$s' from: %2$s"
-msgstr "Sessão expirada para usuário '%1$s' de: %2$s"
+msgstr "Sessão expirou para o usuário '%1$s' de: %2$s"
 
 #: etc/inc/auth.inc:1435
-#, php-format
+#, fuzzy, php-format
 msgid "User logged out for user '%1$s' from: %2$s"
 msgstr "Usuário desconectado para '%1$s' de: %2$s"
 
@@ -218,11 +225,16 @@ msgid "Login"
 msgstr "Login"
 
 #: etc/inc/authgui.inc:273
+#, fuzzy
 msgid ""
 "You are accessing this router by an IP address not configured locally, which "
 "may be forwarded by NAT or other means. <br /><br />If you did not setup "
 "this forwarding, you may be the target of a man-in-the-middle attack."
 msgstr ""
+"Você está acessando este roteador por um IP não configurado localmente, que "
+"pode  ter sido redirecionado por NAT ou outros meios. <br /><br /> Se você "
+"não configurou este redirecionamento, pode estar sendo alvo de um ataque do "
+"tipo man-in-the-middle."
 
 #: etc/inc/authgui.inc:282
 msgid "Username:"
@@ -256,9 +268,9 @@ msgid "%s requires *AT LEAST* %s RAM to function correctly.%s"
 msgstr "%s requer *PELO MENOS* %s de RAM para funcionar corretamente.%s"
 
 #: etc/inc/config.console.inc:61
-#, php-format
+#, fuzzy, php-format
 msgid "Only (%s) MB RAM has been detected, with (%s) available to %s.%s"
-msgstr ""
+msgstr "Apenas (%s) MB RAM foi detectado, com (%s) disponível para %s.%s"
 
 #: etc/inc/config.console.inc:62
 msgid "Press ENTER to continue."
@@ -274,11 +286,11 @@ msgstr "Interfaces VLAN:"
 
 #: etc/inc/config.console.inc:207
 msgid "Enter the WAN interface name or 'a' for auto-detection"
-msgstr ""
+msgstr "Digite o nome da interface WAN ou 'a' para auto-detecção"
 
 #: etc/inc/config.console.inc:208
 msgid "%s(%s or a): "
-msgstr ""
+msgstr "%s(%s ou a): "
 
 #: etc/inc/config.console.inc:216 etc/inc/config.console.inc:242
 #: etc/inc/config.console.inc:278 etc/inc/config.console.inc:546
@@ -287,11 +299,13 @@ msgid "%sInvalid interface name '%s'%s"
 msgstr "%sNome de interface inválido '%s'%s"
 
 #: etc/inc/config.console.inc:224
-#, php-format
+#, fuzzy, php-format
 msgid ""
 "%sEnter the LAN interface name or 'a' for auto-detection %sNOTE: this "
 "enables full Firewalling/NAT mode.%s(%s a or nothing if finished):%s"
 msgstr ""
+"%sDigite o nome da interface LAN ou 'a' para auto-detecção %sOBSERVAÇÃO: "
+"Isso ativará o modo completo de Firewall/NAT.%s(%s a ou nada se concluído):%s"
 
 #: etc/inc/config.console.inc:261
 #, php-format
@@ -299,24 +313,27 @@ msgid "%sOptional interface %s description found: %s"
 msgstr "Descrição de %s interface opcional %s encontrada: %s"
 
 #: etc/inc/config.console.inc:264
-#, php-format
+#, fuzzy, php-format
 msgid ""
 "%sEnter the Optional %s interface name or 'a' for auto-detection%s(%s a or "
 "nothing if finished):%s"
 msgstr ""
+"%sDigite o nome da interface Opcional %s ou 'a' para auto-detecção%s(%s a ou "
+"nada se concluído):%s"
 
 #: etc/inc/config.console.inc:271
 msgid "Optional"
 msgstr "Opcional"
 
 #: etc/inc/config.console.inc:307
+#, fuzzy
 msgid "The interfaces will be assigned as follows:"
-msgstr "As interfaces serão atribuídas conforme segue:"
+msgstr "As interfaces serão atribuídas da seguinte forma:"
 
 #: etc/inc/config.console.inc:447
-#, php-format
+#, fuzzy, php-format
 msgid "%sWriting configuration..."
-msgstr "%sEscrevendo configuração..."
+msgstr "%sGravando configuração..."
 
 #: etc/inc/config.console.inc:449
 #, php-format
@@ -324,20 +341,21 @@ msgid "done.%s"
 msgstr "pronto.%s"
 
 #: etc/inc/config.console.inc:457
+#, fuzzy
 msgid "One moment while we reload the settings..."
-msgstr "Um momento enquanto recarregamos as configurações..."
+msgstr "Um momento enquanto recarrego as configurações..."
 
 #: etc/inc/config.console.inc:458
 msgid " done!"
 msgstr "pronto!"
 
 #: etc/inc/config.console.inc:478
-#, php-format
+#, fuzzy, php-format
 msgid "Detected link-up on interface %s.%s"
 msgstr "Detectado link-up na interface %s.%s"
 
 #: etc/inc/config.console.inc:483
-#, php-format
+#, fuzzy, php-format
 msgid "No link-up detected.%s"
 msgstr "Nenhum link-up detectado.%s"
 
@@ -461,7 +479,7 @@ msgstr ""
 
 #: etc/inc/config.lib.inc:263
 msgid "Could not find a usable configuration file! Exiting...."
-msgstr ""
+msgstr "Não foi possível localizar o arquivo de configuração! Saindo..."
 
 #: etc/inc/config.lib.inc:323
 msgid "Disk is dirty.  Running fsck -y"
@@ -710,111 +728,111 @@ msgstr "Traceroute"
 
 #: etc/inc/filter.inc:80
 msgid "Datagram conversion error"
-msgstr ""
+msgstr "Erro de conversão do Datagrama"
 
 #: etc/inc/filter.inc:81
 msgid "Mobile host redirect"
-msgstr ""
+msgstr "Redirecionamento de host móvel"
 
 #: etc/inc/filter.inc:82
 msgid "IPv6 where-are-you"
-msgstr ""
+msgstr "IPv6 where-are-you"
 
 #: etc/inc/filter.inc:83
 msgid "IPv6 I-am-here"
-msgstr ""
+msgstr "IPv6 I-am-here"
 
 #: etc/inc/filter.inc:84
 msgid "Mobile registration request"
-msgstr ""
+msgstr "Requisição de registro móvel"
 
 #: etc/inc/filter.inc:85
 msgid "Mobile registration reply"
-msgstr ""
+msgstr "Resposta de registro móvel"
 
 #: etc/inc/filter.inc:86
 msgid "SKIP"
-msgstr ""
+msgstr "PULAR"
 
 #: etc/inc/filter.inc:87
 msgid "Photuris"
-msgstr ""
+msgstr "Photuris"
 
 #: etc/inc/filter.inc:94
 msgid "Packet too big"
-msgstr ""
+msgstr "Pacote muito grande"
 
 #: etc/inc/filter.inc:96
 msgid "Parameter problem"
-msgstr ""
+msgstr "Problema no parâmetro"
 
 #: etc/inc/filter.inc:99
 msgid "Group membership query"
-msgstr ""
+msgstr "Consulta de afiliação de grupo"
 
 #: etc/inc/filter.inc:100
 msgid "Multicast listener query"
-msgstr ""
+msgstr "Consulta de receptor Multicast"
 
 #: etc/inc/filter.inc:101
 msgid "Group membership report"
-msgstr ""
+msgstr "Relatório de afiliação de grupo"
 
 #: etc/inc/filter.inc:102
 msgid "Multicast listener report"
-msgstr ""
+msgstr "Relatório do receptor Multicast"
 
 #: etc/inc/filter.inc:103
 msgid "Group membership termination"
-msgstr ""
+msgstr "Encerramento de afiliação a grupo"
 
 #: etc/inc/filter.inc:104
 msgid "Multicast listener done"
-msgstr ""
+msgstr "Recepção de Multicast pronta"
 
 #: etc/inc/filter.inc:107
 msgid "Neighbor solicitation"
-msgstr ""
+msgstr "Neighbor solicitation"
 
 #: etc/inc/filter.inc:108
 msgid "Neighbor advertisement"
-msgstr ""
+msgstr "Neighbor advertisement"
 
 #: etc/inc/filter.inc:110
 msgid "Router renumbering"
-msgstr ""
+msgstr "Router renumbering"
 
 #: etc/inc/filter.inc:111
 msgid "Who are you request"
-msgstr ""
+msgstr "Who are you request"
 
 #: etc/inc/filter.inc:112
 msgid "Who are you reply"
-msgstr ""
+msgstr "Who are you reply"
 
 #: etc/inc/filter.inc:113
 msgid "FQDN query"
-msgstr ""
+msgstr "Requisição de FQDN"
 
 #: etc/inc/filter.inc:114
 msgid "FQDN reply"
-msgstr ""
+msgstr "Resposta de FQDN"
 
 #: etc/inc/filter.inc:115
 msgid "Node information request"
-msgstr ""
+msgstr "Requisição de informação do nodo"
 
 #: etc/inc/filter.inc:116
 msgid "Node information reply"
-msgstr ""
+msgstr "Resposta de informação do nodo"
 
 #: etc/inc/filter.inc:117
 msgid "mtrace resp"
-msgstr ""
+msgstr "mtrace resp"
 
 #: etc/inc/filter.inc:118
 msgid "mtrace messages"
-msgstr ""
+msgstr "mtrace messages"
 
 #: etc/inc/filter.inc:223
 msgid "Initializing"
@@ -950,47 +968,47 @@ msgstr "Criando regra de reflexão para %s..."
 
 #: etc/inc/filter.inc:1390
 msgid "localhost"
-msgstr ""
+msgstr "localhost"
 
 #: etc/inc/filter.inc:1398
 msgid "static route"
-msgstr ""
+msgstr "rota estática"
 
 #: etc/inc/filter.inc:1409
 msgid "DHCP alias address"
-msgstr ""
+msgstr "Endereço de ALIAS DHCP"
 
 #: etc/inc/filter.inc:1446
 msgid "PPTP server"
-msgstr ""
+msgstr "Servidor PPTP"
 
 #: etc/inc/filter.inc:1455
 msgid "PPPoE server"
-msgstr ""
+msgstr "Servidor PPPoE"
 
 #: etc/inc/filter.inc:1464
 msgid "L2TP server"
-msgstr ""
+msgstr "Servidor L2TP"
 
 #: etc/inc/filter.inc:1473
 msgid "OpenVPN server"
-msgstr ""
+msgstr "Servidor OpenVPN"
 
 #: etc/inc/filter.inc:1480
 msgid "OpenVPN client"
-msgstr ""
+msgstr "Cliente OpenVPN"
 
 #: etc/inc/filter.inc:1488
 msgid "IPsec client"
-msgstr ""
+msgstr "Cliente IPsec"
 
 #: etc/inc/filter.inc:1521
 msgid "Auto created rule for ISAKMP"
-msgstr ""
+msgstr "Regra criada automaticamente para ISAKMP"
 
 #: etc/inc/filter.inc:1531
 msgid "Auto created rule"
-msgstr ""
+msgstr "Regra criada automaticamente"
 
 #: etc/inc/filter.inc:1630
 msgid "Creating 1:1 rules..."
@@ -1007,7 +1025,7 @@ msgstr "Criando regras NAT de outbound"
 
 #: etc/inc/filter.inc:1831
 msgid "Creating automatic outbound rules"
-msgstr ""
+msgstr "Criando regras de saída automaticamente"
 
 #: etc/inc/filter.inc:1861
 msgid "Setting up TFTP helper"
@@ -1031,7 +1049,7 @@ msgstr "Configurando regras de liberação/bloqueio %s"
 #: etc/inc/filter.inc:2441
 #, php-format
 msgid "Could not find IPv6 gateway for interface (%s)."
-msgstr ""
+msgstr "Não foi possível localizar um Gateway IPv6 para a interface (%s)."
 
 #: etc/inc/filter.inc:2447
 #, php-format
@@ -1091,6 +1109,8 @@ msgid ""
 "There was a error parsing rule number: %s.   Please report to mailing list "
 "or forum."
 msgstr ""
+"Ocorreu um erro ao validar a regra número: %s. Por favor, informe nas listas "
+"de e-mail ou no fórum."
 
 #: etc/inc/filter_log.inc:260
 #, php-format
@@ -1226,7 +1246,7 @@ msgstr "Configurando %s"
 
 #: etc/inc/interfaces.inc:1103
 msgid "Wrong parameters used during interface_bring_down"
-msgstr ""
+msgstr "Parâmetros incorretos usados durante interface_bring_down"
 
 #: etc/inc/interfaces.inc:1440
 #, php-format
@@ -1280,6 +1300,8 @@ msgid ""
 "Interface does not have required IP address in the subnet of virtual IP "
 "address %s. Skipping this VIP."
 msgstr ""
+"A interface não possui um IP necessário na mesma subrede do IP virtual %s. "
+"Pulando este VIP."
 
 #: etc/inc/interfaces.inc:2135
 #, php-format
@@ -1287,6 +1309,8 @@ msgid ""
 "Interface does not have required IPv6 address in the subnet of virtual IPv6 "
 "address %s. Skipping this VIP."
 msgstr ""
+"A interface não possui um IPv6 necessário na mesma subrede do IPv6 Virtual "
+"%s. Pulando este VIP."
 
 #: etc/inc/interfaces.inc:2191
 #, php-format
@@ -1429,6 +1453,8 @@ msgstr "Nenhum"
 msgid ""
 "Unable to find IPsec daemon leases file. Could not display mobile user stats!"
 msgstr ""
+"Não foi possível localizar o arquivo de concessões do IPsec. Não é possível "
+"mostrar o status dos usuários móveis."
 
 #: etc/inc/meta.inc:68
 #, php-format
@@ -1497,19 +1523,19 @@ msgstr "Acesso Remoto ( SSL/TLS + Autenticação de Usuário )"
 
 #: etc/inc/openvpn.inc:114
 msgid "No Preference"
-msgstr ""
+msgstr "Sem preferencia"
 
 #: etc/inc/openvpn.inc:115
 msgid "Disabled - No Compression"
-msgstr ""
+msgstr "Desabilitado - Sem compressão"
 
 #: etc/inc/openvpn.inc:116
 msgid "Enabled with Adaptive Compression"
-msgstr ""
+msgstr "Habilitado com compressão adaptativa"
 
 #: etc/inc/openvpn.inc:117
 msgid "Enabled without Adaptive Compression"
-msgstr ""
+msgstr "Habilitado sem compressão adaptativa"
 
 #: etc/inc/openvpn.inc:223
 msgid "None (No Encryption)"
@@ -1517,7 +1543,7 @@ msgstr "Nenhum (Sem criptografia)"
 
 #: etc/inc/openvpn.inc:237
 msgid "None (No Authentication)"
-msgstr ""
+msgstr "Nenhum (Sem Autenticação)"
 
 #: etc/inc/openvpn.inc:280
 #, php-format
@@ -1539,6 +1565,8 @@ msgstr "O campo '%s' deve conter um intervalo CIDR válido."
 msgid ""
 "The field '%s' must contain only valid %s CIDR range(s) separated by commas."
 msgstr ""
+"O campo '%s' deve conter apenas segmentos %s CIDR válidos, separados por "
+"vírgulas."
 
 #: etc/inc/pfsense-utils.inc:380
 msgid "MASTER"
@@ -1644,12 +1672,16 @@ msgid ""
 "Alias archive is a .zip file which cannot be decompressed because utility is "
 "missing!"
 msgstr ""
+"O arquivos de ALIAS está no formato .zip que não pode ser descomprimido "
+"porque o utilitário não foi encontrado."
 
 #: etc/inc/pfsense-utils.inc:1992
 msgid ""
 "Alias archive is a .tar/tgz file which cannot be decompressed because "
 "utility is missing!"
 msgstr ""
+"O arquivo de ALIAS está no formato .tar/tgz que não pode ser descomprimido "
+"porque o utilitário não foi encontrado."
 
 #: etc/inc/pfsense-utils.inc:2659 etc/inc/pfsense-utils.inc:2701
 msgid "English"
@@ -1665,103 +1697,103 @@ msgstr "Turco"
 
 #: etc/inc/pfsense-utils.inc:2695
 msgid "Albanian"
-msgstr ""
+msgstr "Albanian"
 
 #: etc/inc/pfsense-utils.inc:2696
 msgid "Bulgarian"
-msgstr ""
+msgstr "Bulgarian"
 
 #: etc/inc/pfsense-utils.inc:2697
 msgid "Chinese (Simplified)"
-msgstr ""
+msgstr "Chinese (Simplified)"
 
 #: etc/inc/pfsense-utils.inc:2698
 msgid "Chinese (Traditional)"
-msgstr ""
+msgstr "Chinese (Traditional)"
 
 #: etc/inc/pfsense-utils.inc:2699
 msgid "Dutch"
-msgstr ""
+msgstr "Dutch"
 
 #: etc/inc/pfsense-utils.inc:2700
 msgid "Danish"
-msgstr ""
+msgstr "Danish"
 
 #: etc/inc/pfsense-utils.inc:2702
 msgid "Finnish"
-msgstr ""
+msgstr "Finnish"
 
 #: etc/inc/pfsense-utils.inc:2703
 msgid "French"
-msgstr ""
+msgstr "French"
 
 #: etc/inc/pfsense-utils.inc:2704
 msgid "German"
-msgstr ""
+msgstr "German"
 
 #: etc/inc/pfsense-utils.inc:2705
 msgid "Greek"
-msgstr ""
+msgstr "Greek"
 
 #: etc/inc/pfsense-utils.inc:2706
 msgid "Hungarian"
-msgstr ""
+msgstr "Hungarian"
 
 #: etc/inc/pfsense-utils.inc:2707
 msgid "Italian"
-msgstr ""
+msgstr "Italian"
 
 #: etc/inc/pfsense-utils.inc:2708
 msgid "Japanese"
-msgstr ""
+msgstr "Japanese"
 
 #: etc/inc/pfsense-utils.inc:2709
 msgid "Korean"
-msgstr ""
+msgstr "Korean"
 
 #: etc/inc/pfsense-utils.inc:2710
 msgid "Latvian"
-msgstr ""
+msgstr "Latvian"
 
 #: etc/inc/pfsense-utils.inc:2711
 msgid "Norwegian (Bokmal)"
-msgstr ""
+msgstr "Norwegian (Bokmal)"
 
 #: etc/inc/pfsense-utils.inc:2712
 msgid "Polish"
-msgstr ""
+msgstr "Polish"
 
 #: etc/inc/pfsense-utils.inc:2714
 msgid "Portuguese (Portugal)"
-msgstr ""
+msgstr "Português (Portugal)"
 
 #: etc/inc/pfsense-utils.inc:2715
 msgid "Romanian"
-msgstr ""
+msgstr "Romanian"
 
 #: etc/inc/pfsense-utils.inc:2716
 msgid "Russian"
-msgstr ""
+msgstr "Russian"
 
 #: etc/inc/pfsense-utils.inc:2717
 msgid "Slovenian"
-msgstr ""
+msgstr "Slovenian"
 
 #: etc/inc/pfsense-utils.inc:2719
 msgid "Spanish"
-msgstr ""
+msgstr "Spanish"
 
 #: etc/inc/pfsense-utils.inc:2720
 msgid "Swedish"
-msgstr ""
+msgstr "Swedish"
 
 #: etc/inc/pfsense-utils.inc:2721
 msgid "Slovak"
-msgstr ""
+msgstr "Slovak"
 
 #: etc/inc/pfsense-utils.inc:2722
 msgid "Czech"
-msgstr ""
+msgstr "Czech"
 
 #: etc/inc/pkg-utils.inc:219
 msgid "Resyncing configuration for all packages."
@@ -1831,7 +1863,7 @@ msgstr "sobrescreva!"
 #: etc/inc/pkg-utils.inc:667
 #, php-format
 msgid "Failed to install package: %s."
-msgstr ""
+msgstr "Falha ao instalar o pacote: %s."
 
 #: etc/inc/pkg-utils.inc:668
 msgid "Failed to install package."
@@ -1844,7 +1876,7 @@ msgstr "Escrevendo a configuração..."
 #: etc/inc/pkg-utils.inc:675
 #, php-format
 msgid "Successfully installed package: %s."
-msgstr ""
+msgstr "Instalação completada para o pacote: %s."
 
 #: etc/inc/pkg-utils.inc:709
 #, php-format
@@ -1979,7 +2011,7 @@ msgstr "Configuração..."
 
 #: etc/inc/pkg-utils.inc:1222
 msgid "One moment please, reinstalling packages...\n"
-msgstr ""
+msgstr "Um momento por favor, reinstalando os pacotes... \n"
 
 #: etc/inc/pkg-utils.inc:1223
 msgid " >>> Trying to fetch package info..."
@@ -2029,7 +2061,7 @@ msgstr "Terminada a reinstalação de todos os pacotes."
 
 #: etc/inc/pkg-utils.inc:1432
 msgid "Package Manager Settings"
-msgstr ""
+msgstr "Configuração do Gerenciador de Pacotes"
 
 #: etc/inc/pkg-utils.inc:1451
 msgid "Downloading package configuration file... "
@@ -2152,19 +2184,19 @@ msgstr "Permitir acesso á  página 'Diagnóstico: Padrões de fábrica'."
 
 #: etc/inc/priv.defs.inc:58
 msgid "Webcfg - Diagnostics: NDP Table page"
-msgstr ""
+msgstr "Webcfg - Diagnósticos: NDP Table page"
 
 #: etc/inc/priv.defs.inc:59
 msgid "Allow access to the 'Diagnostics: NDP Table' page."
-msgstr ""
+msgstr "Permitir acesso para a página 'Diagnósticos: NDP Table'."
 
 #: etc/inc/priv.defs.inc:64
 msgid "Webcfg - Diagnostics: Restore full backup"
-msgstr ""
+msgstr "Webcfg -  Diagnósticos: Restaurar backup completo"
 
 #: etc/inc/priv.defs.inc:65
 msgid "Allow access to the 'Diagnostics: Restore Full Backup' page."
-msgstr ""
+msgstr "Permitir acesso a página 'Diagnósticos: Restaurar backup completo'."
 
 #: etc/inc/priv.defs.inc:70
 msgid "WebCfg - Diagnostics: Show States page"
@@ -2184,7 +2216,7 @@ msgstr "Permite acesso a página 'Diagnosticos: Sockets'"
 
 #: etc/inc/priv.defs.inc:82
 msgid "Webcfg - Diagnostics: Test Port"
-msgstr ""
+msgstr "Webcfg - Diagnósticos: Testar porta"
 
 #: etc/inc/priv.defs.inc:83
 msgid "Allow access to the 'Diagnostics: Test Port' page."
