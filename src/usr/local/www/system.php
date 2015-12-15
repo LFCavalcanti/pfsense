@@ -466,7 +466,7 @@ $section->addInput(new Form_Select(
 $form->add($section);
 
 $csslist = array();
-$css = glob("bootstrap/css/*.css");
+$css = glob("/usr/local/www/bootstrap/css/*.css");
 foreach ($css as $file) {
 	$file = basename($file);
 	if(substr($file, 0, 9) !== 'bootstrap') {
@@ -487,7 +487,7 @@ $section->addInput(new Form_Select(
 	'Theme',
 	$pconfig['webguicss'],
 	$csslist
-))->setHelp("<span class=\"badge bg-danger\" title=\"This feature is in BETA\">BETA</span> Choose an alternative css file (if installed) to change the appearance of the Web configurator. css files are located in /usr/local/www/bootstrap/css");
+))->setHelp('<span class="badge" title="This feature is in BETA">BETA</span> Choose an alternative css file (if installed) to change the appearance of the Web configurator. css files are located in /usr/local/www/bootstrap/css');
 
 $section->addInput(new Form_Select(
 	'webguifixedmenu',
@@ -499,9 +499,10 @@ $section->addInput(new Form_Select(
 $section->addInput(new Form_Input(
 	'dashboardcolumns',
 	'Dashboard Columns',
-	'text',
-	$pconfig['dashboardcolumns']
-))->setHelp("<span class=\"badge bg-danger\" title=\"This feature is in BETA\">BETA</span>");
+	'number',
+	$pconfig['dashboardcolumns'],
+	[min => 1, max => 4]
+))->setHelp('<span class="badge" title="This feature is in BETA">BETA</span>');
 
 $form->add($section);
 

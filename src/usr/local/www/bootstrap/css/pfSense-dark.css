@@ -79,6 +79,11 @@ ul.context-links li a {
     color: #009688;
 }
 
+/* navigation */
+.navbar-inverse {
+    background-color: #000000;
+}
+
 .nav>li>a {
     border-bottom: 5px solid #212121;
     color: #009688;
@@ -97,7 +102,7 @@ ul.context-links li a {
     color: #009688;
 }
 
-.navbar-nav >li>a {
+.navbar-inverse .navbar-nav >li>a {
     border-bottom: 5px solid #000000;
 }
 
@@ -117,6 +122,7 @@ ul.context-links li a {
 .nav-tabs {
     border-bottom: 1px solid #009688;
 }
+/* end navigation */
 
 /* common button colors */
 .btn-default {
@@ -158,6 +164,18 @@ ul.context-links li a {
     border-color: #37474F;
 }
 
+.alert-warning {
+    border-top: 1px solid #FFECB3;
+}
+
+.alert-success {
+    border-top: 1px solid #DCEDC8;
+}
+
+.alert-info {
+    border-top: 1px solid #B2EBF2;
+}
+
 caption {
     color: #E0E0E0;
     background-color: #303030;
@@ -185,12 +203,6 @@ caption {
 
 .panel-footer {
     background-color: #424242;
-}
-
-.alert-warning {
-    color: #6D4C41;
-    background-color: #FFF9C4;
-    border-color: #FFEB3B;
 }
 
 .help-block {

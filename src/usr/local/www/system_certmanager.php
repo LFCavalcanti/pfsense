@@ -82,7 +82,7 @@ $cert_types = array(
 $altname_types = array("DNS", "IP", "email", "URI");
 $openssl_digest_algs = array("sha1", "sha224", "sha256", "sha384", "sha512");
 
-$pgtitle = array(gettext("System"), gettext("Certificate Manager"));
+$pgtitle = array(gettext("System"), gettext("Certificate Manager"), gettext("Certificates"));
 
 if (is_numericint($_GET['userid'])) {
 	$userid = $_GET['userid'];
@@ -958,6 +958,13 @@ print $form;
 	));
 
 	$section = new Form_Section("Complete signing request for " . $pconfig['descr']);
+
+	$section->addInput(new Form_Input(
+		'descr',
+		'Descriptive name',
+		'text',
+		$pconfig['descr']
+	));
 
 	$section->addInput(new Form_Textarea(
 		'csr',
