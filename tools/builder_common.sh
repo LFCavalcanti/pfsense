@@ -152,6 +152,26 @@ core_pkg_create() {
 		rm -f ${_plist}.tmp ${plist}.exclude
 	fi
 
+	# Add license information
+	local _portname=$(sed '/^name: /!d; s,^[^"]*",,; s,",,' ${_metadir}/+MANIFEST)
+	local _licenses_dir="/usr/local/share/licenses/${_portname}-${_version}"
+	mkdir -p ${_root}${_licenses_dir}
+	cp ${BUILDER_ROOT}/license.txt ${_root}${_licenses_dir}/ESF
+	echo "This package has a single license: ESF (Electric Sheep Fencing License)." \
+		> ${_root}${_licenses_dir}/LICENSE
+	cat <<EOF >${_root}${_licenses_dir}/catalog.mk
+_LICENSE=ESF
+_LICENSE_NAME=Electric Sheep Fencing License
+_LICENSE_PERMS=dist-mirror dist-sell pkg-mirror pkg-sell auto-accept
+_LICENSE_GROUPS=
+_LICENSE_DISTFILES=
+EOF
+	cat <<EOF >>${_plist}
+${_licenses_dir}/catalog.mk
+${_licenses_dir}/LICENSE
+${_licenses_dir}/ESF
+EOF
+
 	mkdir -p ${CORE_PKG_REAL_PATH}/All
 	if ! pkg create -o ${CORE_PKG_REAL_PATH}/All -p ${_plist} -r ${_root} -m ${_metadir}; then
 		echo ">>> ERROR: Error building package ${_template} ${_flavor}"
@@ -180,6 +200,11 @@ print_error_pfS() {
 }
 
 prestage_on_ram_setup() {
+	# Do not use memory disks for release build
+	if [ -n "${_IS_RELEASE}" ]; then
+		return
+	fi
+
 	[ -d "${STAGE_CHROOT_DIR}" ] \
 		|| mkdir -p ${STAGE_CHROOT_DIR}
 	[ -d "${FINAL_CHROOT_DIR}" ] \
@@ -291,16 +316,17 @@ build_all_kernels() {
 
 		ensure_kernel_exists $KERNEL_DESTDIR
 
-		echo -n ">>> Creating pkg of $KERNEL_NAME-debug kernel to staging area..."  | tee -a ${LOGFILE}
+		echo -n ">>> Creating pkg of $KERNEL_NAME-debug kernel to staging area... "  | tee -a ${LOGFILE}
 		core_pkg_create kernel-debug ${KERNEL_NAME} ${CORE_PKG_VERSION} ${KERNEL_DESTDIR} \*.symbols
 		find ${KERNEL_DESTDIR} -name '*.symbols' -type f -delete
+		echo " Done" | tee -a ${LOGFILE}
 
-		echo -n ">>> Creating pkg of $KERNEL_NAME kernel to staging area..."  | tee -a ${LOGFILE}
+		echo -n ">>> Creating pkg of $KERNEL_NAME kernel to staging area... "  | tee -a ${LOGFILE}
 		core_pkg_create kernel ${KERNEL_NAME} ${CORE_PKG_VERSION} ${KERNEL_DESTDIR}
 
 		rm -rf $KERNEL_DESTDIR 2>&1 1>/dev/null
 
-		echo ".Done" | tee -a ${LOGFILE}
+		echo " Done" | tee -a ${LOGFILE}
 	done
 }
 
@@ -595,6 +621,18 @@ create_nanobsd_diskimage () {
 	fi
 	echo 'autoboot_delay="5"' >> ${LOADERCONF}
 
+	# Old systems will run (pre|post)_upgrade_command from /tmp
+	if [ -f ${FINAL_CHROOT_DIR}${PRODUCT_SHARE_DIR}/pre_upgrade_command ]; then
+		cp -p \
+			${FINAL_CHROOT_DIR}${PRODUCT_SHARE_DIR}/pre_upgrade_command \
+			${FINAL_CHROOT_DIR}/tmp
+	fi
+	if [ -f ${FINAL_CHROOT_DIR}${PRODUCT_SHARE_DIR}/post_upgrade_command ]; then
+		cp -p \
+			${FINAL_CHROOT_DIR}${PRODUCT_SHARE_DIR}/post_upgrade_command \
+			${FINAL_CHROOT_DIR}/tmp
+	fi
+
 	for _NANO_MEDIASIZE in ${2}; do
 		if [ -z "${_NANO_MEDIASIZE}" ]; then
 			continue;
@@ -869,7 +907,7 @@ create_ova_image() {
 
 	# Fill fstab
 	echo ">>> Installing platform specific items..." | tee -a ${LOGFILE}
-	echo "/dev/gpt/${PRODUCT_NAME}	/	ufs		rw	0	0" > ${FINAL_CHROOT_DIR}/etc/fstab
+	echo "/dev/gpt/${PRODUCT_NAME}	/	ufs		rw	1	1" > ${FINAL_CHROOT_DIR}/etc/fstab
 	if [ -n "${OVA_SWAP_PART_SIZE}" ]; then
 		echo "/dev/gpt/swap0	none	swap	sw	0	0" >> ${FINAL_CHROOT_DIR}/etc/fstab
 	fi
@@ -878,7 +916,7 @@ create_ova_image() {
 	echo -n ">>> Creating / partition... " | tee -a ${LOGFILE}
 	makefs \
 		-B little \
-		-o label=${PRODUCT_NAME} \
+		-o label=${PRODUCT_NAME},version=2,bsize=32768,fsize=4096,maxbpg=4096,density=8192,minfree=8 \
 		-s ${OVA_FIRST_PART_SIZE} \
 		${OVA_TMP}/${OVFUFS} \
 		${FINAL_CHROOT_DIR} 2>&1 >> ${LOGFILE}
@@ -889,6 +927,14 @@ create_ova_image() {
 		fi
 		echo "Failed!" | tee -a ${LOGFILE}
 		echo ">>> ERROR: Error creating vmdk / partition. STOPPING!" | tee -a ${LOGFILE}
+		print_error_pfS
+	fi
+	echo "Done!" | tee -a ${LOGFILE}
+
+	echo -n ">>> Enabling SUJ on recently created disk... " | tee -a ${LOGFILE}
+	if ! tunefs -j enable ${OVA_TMP}/${OVFUFS} 2>&1 >>${LOGFILE}; then
+		echo "Failed!" | tee -a ${LOGFILE}
+		echo ">>> ERROR: Error enabling SUJ on disk. STOPPING!" | tee -a ${LOGFILE}
 		print_error_pfS
 	fi
 	echo "Done!" | tee -a ${LOGFILE}
@@ -1053,6 +1099,9 @@ clean_builder() {
 }
 
 clone_directory_contents() {
+	if [ ! -e "$2" ]; then
+		mkdir -p "$2"
+	fi
 	if [ ! -d "$1" -o ! -d "$2" ]; then
 		if [ -z "${LOGFILE}" ]; then
 			echo ">>> ERROR: Argument $1 supplied is not a directory!"
@@ -1080,7 +1129,6 @@ clone_to_staging_area() {
 	fi
 
 	if [ -f ${STAGE_CHROOT_DIR}/etc/master.passwd ]; then
-		chroot ${STAGE_CHROOT_DIR} cap_mkdb /etc/master.passwd
 		chroot ${STAGE_CHROOT_DIR} pwd_mkdb /etc/master.passwd
 	fi
 	mkdir -p ${STAGE_CHROOT_DIR}/etc/mtree
@@ -1109,18 +1157,10 @@ clone_to_staging_area() {
 
 	# Include a sample pkg stable conf to base
 	setup_pkg_repo \
+		${PKG_REPO_DEFAULT} \
 		${STAGE_CHROOT_DIR}${PRODUCT_SHARE_DIR}/${PRODUCT_NAME}-repo.conf \
 		${TARGET} \
-		${TARGET_ARCH} \
-		${PKG_REPO_CONF_BRANCH} \
-		"release"
-
-	# Include a sample pkg devel conf to base
-	setup_pkg_repo \
-		${STAGE_CHROOT_DIR}${PRODUCT_SHARE_DIR}/${PRODUCT_NAME}-repo-devel.conf \
-		${TARGET} \
-		${TARGET_ARCH} \
-		${PKG_REPO_CONF_BRANCH}
+		${TARGET_ARCH}
 
 	mtree \
 		-c \
@@ -1134,20 +1174,30 @@ clone_to_staging_area() {
 		-X ${_exclude_files} \
 		.
 
-	mkdir -p $(dirname ${STAGE_CHROOT_DIR}${PKG_REPO_PATH}) >/dev/null 2>&1
+	local _share_repos_path="${SCRATCHDIR}/repo-tmp/${PRODUCT_SHARE_DIR}/pkg/repos"
+	rm -rf ${SCRATCHDIR}/repo-tmp >/dev/null 2>&1
+	mkdir -p ${_share_repos_path} >/dev/null 2>&1
 
-	# Create repo and repo-devel packages
-	cp -f ${STAGE_CHROOT_DIR}${PRODUCT_SHARE_DIR}/${PRODUCT_NAME}-repo.conf \
-		${STAGE_CHROOT_DIR}${PKG_REPO_PATH}
+	setup_pkg_repo \
+		${PKG_REPO_DEFAULT} \
+		${_share_repos_path}/${PRODUCT_NAME}-repo.conf \
+		${TARGET} \
+		${TARGET_ARCH}
 
-	core_pkg_create repo "" ${CORE_PKG_VERSION} ${STAGE_CHROOT_DIR}
+	cp -f ${PKG_REPO_DEFAULT%%.conf}.descr ${_share_repos_path}
 
-	cp -f ${STAGE_CHROOT_DIR}${PRODUCT_SHARE_DIR}/${PRODUCT_NAME}-repo-devel.conf \
-		${STAGE_CHROOT_DIR}${PKG_REPO_PATH}
+	# Add additional repos
+	for _template in ${PKG_REPO_BASE}/${PRODUCT_NAME}-repo-*.conf; do
+		_template_filename=$(basename ${_template})
+		setup_pkg_repo \
+			${_template} \
+			${_share_repos_path}/${_template_filename} \
+			${TARGET} \
+			${TARGET_ARCH}
+		cp -f ${_template%%.conf}.descr ${_share_repos_path}
+	done
 
-	core_pkg_create repo-devel "" ${CORE_PKG_VERSION} ${STAGE_CHROOT_DIR}
-
-	rm -f ${STAGE_CHROOT_DIR}${PKG_REPO_PATH}
+	core_pkg_create repo "" ${CORE_PKG_VERSION} ${SCRATCHDIR}/repo-tmp
 
 	core_pkg_create rc "" ${CORE_PKG_VERSION} ${STAGE_CHROOT_DIR}
 	core_pkg_create base "" ${CORE_PKG_VERSION} ${STAGE_CHROOT_DIR}
@@ -1232,6 +1282,7 @@ customize_stagearea_for_image() {
 	create_final_staging_area
 
 	pkg_chroot_add ${FINAL_CHROOT_DIR} rc
+	pkg_chroot_add ${FINAL_CHROOT_DIR} repo
 
 	if [ "${_image_type}" = "nanobsd" -o \
 	     "${_image_type}" = "nanobsd-vga" ]; then
@@ -1250,12 +1301,6 @@ customize_stagearea_for_image() {
 		pkg_chroot_add ${FINAL_CHROOT_DIR} base
 	fi
 
-	if [ -n "${IS_RELEASE}" ]; then
-		pkg_chroot_add ${FINAL_CHROOT_DIR} repo
-	else
-		pkg_chroot_add ${FINAL_CHROOT_DIR} repo-devel
-	fi
-
 	if [ "${_image_type}" = "iso" -o \
 	     "${_image_type}" = "memstick" -o \
 	     "${_image_type}" = "memstickserial" -o \
@@ -1266,6 +1311,23 @@ customize_stagearea_for_image() {
 	fi
 
 	pkg_chroot_add ${FINAL_CHROOT_DIR} ${_default_config}
+
+	# XXX: Workaround to avoid pkg to complain regarding release
+	#      repo on first boot since packages are installed from
+	#      staging server during build phase
+	if [ -n "${USE_PKG_REPO_STAGING}" ]; then
+		_read_cmd="select value from repodata where key='packagesite'"
+		if [ -n "${_IS_RELEASE}" ]; then
+			local _tgt_server="${PKG_REPO_SERVER_RELEASE}"
+		else
+			local _tgt_server="${PKG_REPO_SERVER_DEVEL}"
+		fi
+		for _db in ${FINAL_CHROOT_DIR}/var/db/pkg/repo-*sqlite; do
+			_cur=$(/usr/local/bin/sqlite3 ${_db} "${_read_cmd}")
+			_new=$(echo "${_cur}" | sed -e "s,^${PKG_REPO_SERVER_STAGING},${_tgt_server},")
+			/usr/local/bin/sqlite3 ${_db} "update repodata set value='${_new}' where key='packagesite'"
+		done
+	fi
 }
 
 create_distribution_tarball() {
@@ -1333,7 +1395,7 @@ create_memstick_image() {
 
 	create_distribution_tarball
 
-	makefs -B little -o label=${PRODUCT_NAME} ${MEMSTICKPATH} ${FINAL_CHROOT_DIR}
+	makefs -B little -o label=${PRODUCT_NAME},version=2 ${MEMSTICKPATH} ${FINAL_CHROOT_DIR}
 	if [ $? -ne 0 ]; then
 		if [ -f ${MEMSTICKPATH} ]; then
 			rm -f $MEMSTICKPATH
@@ -1393,7 +1455,7 @@ create_memstick_serial_image() {
 
 	create_distribution_tarball
 
-	makefs -B little -o label=${PRODUCT_NAME} ${MEMSTICKSERIALPATH} ${FINAL_CHROOT_DIR}
+	makefs -B little -o label=${PRODUCT_NAME},version=2 ${MEMSTICKSERIALPATH} ${FINAL_CHROOT_DIR}
 	if [ $? -ne 0 ]; then
 		if [ -f ${MEMSTICKSERIALPATH} ]; then
 			rm -f $MEMSTICKSERIALPATH
@@ -1455,7 +1517,7 @@ create_memstick_adi_image() {
 
 	create_distribution_tarball
 
-	makefs -B little -o label=${PRODUCT_NAME} ${MEMSTICKADIPATH} ${FINAL_CHROOT_DIR}
+	makefs -B little -o label=${PRODUCT_NAME},version=2 ${MEMSTICKADIPATH} ${FINAL_CHROOT_DIR}
 	if [ $? -ne 0 ]; then
 		if [ -f ${MEMSTICKADIPATH} ]; then
 			rm -f $MEMSTICKADIPATH
@@ -1483,29 +1545,37 @@ setup_pkg_repo() {
 		return
 	fi
 
-	local _target="${1}"
-	local _arch="${2}"
-	local _target_arch="${3}"
-	local _branch="${4}"
-	local _release="${5}"
-
-	if [ -n "${_release}" ]; then
-		local _template="${PKG_REPO_TEMPLATE}"
-	else
-		local _template="${PKG_REPO_DEVEL_TEMPLATE}"
-	fi
+	local _template="${1}"
+	local _target="${2}"
+	local _arch="${3}"
+	local _target_arch="${4}"
+	local _staging="${5}"
 
 	if [ -z "${_template}" -o ! -f "${_template}" ]; then
 		echo ">>> ERROR: It was not possible to find pkg conf template ${_template}"
 		print_error_pfS
 	fi
 
+	if [ -n "${_staging}" -a -n "${USE_PKG_REPO_STAGING}" ]; then
+		local _pkg_repo_server_devel=${PKG_REPO_SERVER_STAGING}
+		local _pkg_repo_branch_devel=${PKG_REPO_BRANCH_STAGING}
+		local _pkg_repo_server_release=${PKG_REPO_SERVER_STAGING}
+		local _pkg_repo_branch_release=${PKG_REPO_BRANCH_STAGING}
+	else
+		local _pkg_repo_server_devel=${PKG_REPO_SERVER_DEVEL}
+		local _pkg_repo_branch_devel=${PKG_REPO_BRANCH_DEVEL}
+		local _pkg_repo_server_release=${PKG_REPO_SERVER_RELEASE}
+		local _pkg_repo_branch_release=${PKG_REPO_BRANCH_RELEASE}
+	fi
+
 	mkdir -p $(dirname ${_target}) >/dev/null 2>&1
 
 	sed \
-		-e "s/%%ARCH%%/${_arch}_${_target_arch}/" \
-		-e "s/%%GIT_REPO_BRANCH_OR_TAG%%/${_branch}/g" \
-		-e "s,%%PKG_REPO_SERVER%%,${PKG_REPO_SERVER},g" \
+		-e "s/%%ARCH%%/${_target_arch}/" \
+		-e "s/%%PKG_REPO_BRANCH_DEVEL%%/${_pkg_repo_branch_devel}/g" \
+		-e "s/%%PKG_REPO_BRANCH_RELEASE%%/${_pkg_repo_branch_release}/g" \
+		-e "s,%%PKG_REPO_SERVER_DEVEL%%,${_pkg_repo_server_devel},g" \
+		-e "s,%%PKG_REPO_SERVER_RELEASE%%,${_pkg_repo_server_release},g" \
 		-e "s/%%PRODUCT_NAME%%/${PRODUCT_NAME}/g" \
 		${_template} \
 		> ${_target}
@@ -1527,11 +1597,11 @@ builder_setup() {
 
 		local _arch=$(uname -m)
 		setup_pkg_repo \
+			${PKG_REPO_DEFAULT} \
 			${PKG_REPO_PATH} \
 			${_arch} \
 			${_arch} \
-			${PKG_REPO_CONF_BRANCH} \
-			${IS_RELEASE}
+			"staging"
 
 		# Use fingerprint keys from repo
 		sed -i '' -e "/fingerprints:/ s,\"/,\"${BUILDER_ROOT}/src/," \
@@ -1611,9 +1681,12 @@ pkg_chroot() {
 	cp -f /etc/resolv.conf ${_root}/etc/resolv.conf
 	touch ${BUILDER_LOGS}/install_pkg_install_ports.txt
 	script -aq ${BUILDER_LOGS}/install_pkg_install_ports.txt pkg -c ${_root} $@ >/dev/null 2>&1
+	local result=$?
 	rm -f ${_root}/etc/resolv.conf
 	/sbin/umount -f ${_root}/dev
 	/sbin/umount -f ${_root}/var/cache/pkg
+
+	return $result
 }
 
 
@@ -1644,11 +1717,11 @@ pkg_bootstrap() {
 	local _root=${1:-"${STAGE_CHROOT_DIR}"}
 
 	setup_pkg_repo \
+		${PKG_REPO_DEFAULT} \
 		${_root}${PKG_REPO_PATH} \
 		${TARGET} \
 		${TARGET_ARCH} \
-		${PKG_REPO_CONF_BRANCH} \
-		${IS_RELEASE}
+		"staging"
 
 	pkg_chroot ${_root} bootstrap -f
 }
@@ -1671,20 +1744,42 @@ install_pkg_install_ports() {
 	[ -d ${SCRATCHDIR}/pkg_cache ] || \
 		mkdir -p ${SCRATCHDIR}/pkg_cache
 
-	echo ">>> Installing built ports (packages) in chroot (${STAGE_CHROOT_DIR})... (starting)"
-	pkg_chroot ${STAGE_CHROOT_DIR} install ${MAIN_PKG} ${custom_package_list}
+	echo -n ">>> Installing built ports (packages) in chroot (${STAGE_CHROOT_DIR})... "
+	# First mark all packages as automatically installed
+	pkg_chroot ${STAGE_CHROOT_DIR} set -A 1 -a
+	# Install all necessary packages
+	if ! pkg_chroot ${STAGE_CHROOT_DIR} install ${MAIN_PKG} ${custom_package_list}; then
+		echo "Failed!"
+		print_error_pfS
+	fi
+	# Make sure required packages are set as non-automatic
+	pkg_chroot ${STAGE_CHROOT_DIR} set -A 0 pkg ${MAIN_PKG} ${custom_package_list}
+	# Remove unnecessary packages
 	pkg_chroot ${STAGE_CHROOT_DIR} autoremove
-	echo ">>> Installing built ports (packages) in chroot (${STAGE_CHROOT_DIR})... (finshied)"
+	echo "Done!"
 }
 
 install_bsdinstaller() {
+	local _params=""
+
+	# Use staging repo on RELEASE
+	if [ -n "${_IS_RELEASE}" ]; then
+		mkdir -p ${FINAL_CHROOT_DIR}/tmp/pkg-repo
+		cp -f ${STAGE_CHROOT_DIR}${PKG_REPO_PATH} \
+			${FINAL_CHROOT_DIR}/tmp/pkg-repo
+		_params="--repo-conf-dir /tmp/pkg-repo "
+	fi
+
 	echo ">>> Installing BSDInstaller in chroot (${FINAL_CHROOT_DIR})... (starting)"
-	pkg_chroot ${FINAL_CHROOT_DIR} install -f bsdinstaller
+	pkg_chroot ${FINAL_CHROOT_DIR} ${_params}install -f bsdinstaller
 	sed -i '' -e "s,%%PRODUCT_NAME%%,${PRODUCT_NAME}," \
 		  -e "s,%%PRODUCT_VERSION%%,${PRODUCT_VERSION}," \
 		  -e "s,%%ARCH%%,${TARGET}," \
 		  ${FINAL_CHROOT_DIR}/usr/local/share/dfuibe_lua/conf/pfSense.lua \
 		  ${FINAL_CHROOT_DIR}/usr/local/share/dfuibe_lua/conf/pfSense_rescue.lua
+	if [ -n "${_IS_RELEASE}" ]; then
+		rm -rf ${FINAL_CHROOT_DIR}/tmp/pkg-repo
+	fi
 	echo ">>> Installing BSDInstaller in chroot (${FINAL_CHROOT_DIR})... (finished)"
 }
 
@@ -1760,11 +1855,20 @@ finish() {
 }
 
 pkg_repo_rsync() {
-	local _repo_path="${1}"
+	local _repo_path_param="${1}"
 
-	if [ -z "${_repo_path}" -o ! -d "${_repo_path}" ]; then
+	if [ -z "${_repo_path_param}" -o ! -d "${_repo_path_param}" ]; then
 		return
 	fi
+
+	# Sanitize path
+	_repo_path=$(realpath ${_repo_path_param})
+
+	local _repo_dir=$(dirname ${_repo_path})
+	local _repo_base=$(basename ${_repo_path})
+
+	# Add ./ it's an rsync trick to make it chdir to directory before sending it
+	_repo_path="${_repo_dir}/./${_repo_base}"
 
 	if [ -z "${LOGFILE}" ]; then
 		local _logfile="/dev/null"
@@ -1817,6 +1921,11 @@ pkg_repo_rsync() {
 		return
 	fi
 
+	# Make sure destination directory exist
+	ssh -p ${PKG_RSYNC_SSH_PORT} \
+		${PKG_RSYNC_USERNAME}@${PKG_RSYNC_HOSTNAME} \
+		"mkdir -p ${PKG_RSYNC_DESTDIR}"
+
 	echo -n ">>> Sending updated repository to ${PKG_RSYNC_HOSTNAME}... " | tee -a ${_logfile}
 	if script -aq ${_logfile} rsync -ave "ssh -p ${PKG_RSYNC_SSH_PORT}" \
 		--timeout=60 --delete-delay ${_repo_path} \
@@ -1828,10 +1937,30 @@ pkg_repo_rsync() {
 		echo ">>> ERROR: An error occurred sending repo to remote hostname"
 		print_error_pfS
 	fi
+
+	if [ -z "${USE_PKG_REPO_STAGING}" ]; then
+		return
+	fi
+
+	if [ -n "${_IS_RELEASE}" -o "${_repo_path_param}" = "${CORE_PKG_PATH}" ]; then
+		local _cmd="rsync -ave \"ssh -p ${PKG_FINAL_RSYNC_SSH_PORT}\" \
+			--timeout=60 --delete-delay ${PKG_RSYNC_DESTDIR}/./${_repo_base%%-core}* \
+			${PKG_FINAL_RSYNC_USERNAME}@${PKG_FINAL_RSYNC_HOSTNAME}:${PKG_FINAL_RSYNC_DESTDIR}"
+
+		echo -n ">>> Sending updated repositories to ${PKG_FINAL_RSYNC_HOSTNAME}... " | tee -a ${_logfile}
+		if script -aq ${_logfile} ssh -p ${PKG_RSYNC_SSH_PORT} \
+			${PKG_RSYNC_USERNAME}@${PKG_RSYNC_HOSTNAME} ${_cmd} >/dev/null 2>&1; then
+			echo "Done!" | tee -a ${_logfile}
+		else
+			echo "Failed!" | tee -a ${_logfile}
+			echo ">>> ERROR: An error occurred sending repo to final hostname"
+			print_error_pfS
+		fi
+	fi
 }
 
 poudriere_create_patch() {
-	local _jail_patch="${SCRATCHDIR}/poudriere_jail.${GIT_REPO_BRANCH_OR_TAG}.patch"
+	local _jail_patch="${SCRATCHDIR}/poudriere_jail.${POUDRIERE_BRANCH}.patch"
 
 	if [ -z "${FREEBSD_PARENT_BRANCH}" ]; then
 		echo ">>> ERROR: FREEBSD_PARENT_BRANCH is not set"
@@ -1904,10 +2033,8 @@ poudriere_jail_name() {
 		return 1
 	fi
 
-	# Poudriere doesn't like periods in jail names
-	_jail_arch=$(echo "${_jail_arch}" | tr '.' '_')
-
-	echo "${PRODUCT_NAME}_${GIT_REPO_BRANCH_OR_TAG}_${_jail_arch}"
+	# Remove arch
+	echo "${PRODUCT_NAME}_${POUDRIERE_BRANCH}_${_jail_arch##*.}"
 }
 
 poudriere_rename_ports() {
@@ -1996,7 +2123,7 @@ poudriere_create_ports_tree() {
 poudriere_init() {
 	local _error=0
 	local _archs=$(poudriere_possible_archs)
-	local _jail_patch="${SCRATCHDIR}/poudriere_jail.${GIT_REPO_BRANCH_OR_TAG}.patch"
+	local _jail_patch="${SCRATCHDIR}/poudriere_jail.${POUDRIERE_BRANCH}.patch"
 
 	LOGFILE=${BUILDER_LOGS}/poudriere.log
 
@@ -2066,6 +2193,8 @@ CHECK_CHANGED_OPTIONS=yes
 CHECK_CHANGED_DEPS=yes
 ATOMIC_PACKAGE_REPOSITORY=yes
 COMMIT_PACKAGES_ON_FAILURE=no
+KEEP_OLD_PACKAGES=yes
+KEEP_OLD_PACKAGES_COUNT=5
 EOF
 
 	# Create specific items conf
@@ -2128,7 +2257,7 @@ EOF
 
 poudriere_update_jails() {
 	local _archs=$(poudriere_possible_archs)
-	local _jail_patch="${SCRATCHDIR}/poudriere_jail.${GIT_REPO_BRANCH_OR_TAG}.patch"
+	local _jail_patch="${SCRATCHDIR}/poudriere_jail.${POUDRIERE_BRANCH}.patch"
 
 	LOGFILE=${BUILDER_LOGS}/poudriere.log
 
@@ -2190,6 +2319,8 @@ poudriere_bulk() {
 		print_error_pfS
 	fi
 
+	rm -f ${LOGFILE}
+
 	poudriere_create_ports_tree
 
 	[ -d /usr/local/etc/poudriere.d ] || \
@@ -2202,7 +2333,9 @@ poudriere_bulk() {
 	# Change version of pfSense meta ports for snapshots
 	if [ -z "${_IS_RELEASE}" ]; then
 		local _meta_pkg_version="$(echo "${PRODUCT_VERSION}" | sed 's,DEVELOPMENT,ALPHA,')-${DATESTRING}"
-		sed -i '' -e "/^DISTVERSION/ s,^.*,DISTVERSION=	${_meta_pkg_version}," \
+		sed -i '' \
+			-e "/^DISTVERSION/ s,^.*,DISTVERSION=	${_meta_pkg_version}," \
+			-e "/^PORTREVISION=/d" \
 			/usr/local/poudriere/ports/${POUDRIERE_PORTS_NAME}/security/${PRODUCT_NAME}/Makefile
 	fi
 
@@ -2220,7 +2353,7 @@ poudriere_bulk() {
 			_ref_bulk="${POUDRIERE_BULK}"
 		fi
 
-		_bulk=${SCRATCHDIR}/poudriere_bulk.${GIT_REPO_BRANCH_OR_TAG}
+		_bulk=${SCRATCHDIR}/poudriere_bulk.${POUDRIERE_BRANCH}
 		sed -e "s,%%PRODUCT_NAME%%,${PRODUCT_NAME},g" ${_ref_bulk} > ${_bulk}
 
 		if ! poudriere bulk -f ${_bulk} -j ${jail_name} -p ${POUDRIERE_PORTS_NAME}; then
@@ -2234,8 +2367,7 @@ poudriere_bulk() {
 			print_error_pfS
 		fi
 
-		# ./ is intentional, it's an rsync trick to make it chdir to directory before sending it
-		pkg_repo_rsync "/usr/local/poudriere/data/packages/./${jail_name}-${POUDRIERE_PORTS_NAME}"
+		pkg_repo_rsync "/usr/local/poudriere/data/packages/${jail_name}-${POUDRIERE_PORTS_NAME}"
 	done
 }
 
@@ -2280,6 +2412,19 @@ snapshots_rotate_logfile() {
 
 }
 
+create_sha256() {
+	local _file="${1}"
+
+	if [ ! -f "${_file}" ]; then
+		return 1
+	fi
+
+	( \
+		cd $(dirname ${_file}) && \
+		sha256 $(basename ${_file}) > $(basename ${_file}).sha256 \
+	)
+}
+
 snapshots_create_latest_symlink() {
 	local _image="${1}"
 
@@ -2291,16 +2436,12 @@ snapshots_create_latest_symlink() {
 		return
 	fi
 
-	if [ -f "${_image}.gz" ]; then
-		local _image_fixed="${_image}.gz"
-	elif [ -f "${_image}" ]; then
-		local _image_fixed=${_image}
-	else
+	if [ ! -f "${_image}" ]; then
 		return
 	fi
 
-	local _symlink=$(echo ${_image_fixed} | sed "s,${TIMESTAMP_SUFFIX},-latest,")
-	ln -sf $(basename ${_image_fixed}) ${_symlink}
+	local _symlink=$(echo ${_image} | sed "s,${TIMESTAMP_SUFFIX},-latest,")
+	ln -sf $(basename ${_image}) ${_symlink}
 	ln -sf $(basename ${_image}).sha256 ${_symlink}.sha256
 }
 
@@ -2316,16 +2457,16 @@ snapshots_copy_to_staging_nanobsd() {
 			cp -l $IMAGES_FINAL_DIR/$FILENAMEUPGRADE $STAGINGAREA/nanobsdupdates 2>/dev/null
 
 			if [ -f $STAGINGAREA/nanobsd/$FILENAMEFULL ]; then
-				sha256 $STAGINGAREA/nanobsd/$FILENAMEFULL > $STAGINGAREA/nanobsd/$FILENAMEFULL.sha256 2>/dev/null
+				create_sha256 $STAGINGAREA/nanobsd/$FILENAMEFULL
 			fi
 			if [ -f $STAGINGAREA/nanobsdupdates/$FILENAMEUPGRADE ]; then
-				sha256 $STAGINGAREA/nanobsdupdates/$FILENAMEUPGRADE > $STAGINGAREA/nanobsdupdates/$FILENAMEUPGRADE.sha256 2>/dev/null
+				create_sha256 $STAGINGAREA/nanobsdupdates/$FILENAMEUPGRADE
 			fi
 
 			# Copy NanoBSD auto update:
 			if [ -f $STAGINGAREA/nanobsdupdates/$FILENAMEUPGRADE ]; then
 				cp -l $STAGINGAREA/nanobsdupdates/$FILENAMEUPGRADE $STAGINGAREA/latest-${NANOTYPE}-$FILESIZE.img.gz 2>/dev/null
-				sha256 $STAGINGAREA/latest-${NANOTYPE}-$FILESIZE.img.gz > $STAGINGAREA/latest-${NANOTYPE}-$FILESIZE.img.gz.sha256 2>/dev/null
+				create_sha256 $STAGINGAREAA/latest-${NANOTYPE}-$FILESIZE.img.gz
 				# NOTE: Updates need a file with output similar to date output
 				# Use the file generated at start of snapshots_dobuilds() to be consistent on times
 				cp $BUILTDATESTRINGFILE $STAGINGAREA/version-${NANOTYPE}-$FILESIZE
@@ -2341,20 +2482,21 @@ snapshots_copy_to_staging_iso_updates() {
 		if [ ! -f "${_img}.gz" ]; then
 			continue
 		fi
-		sha256 ${_img}.gz > ${_img}.sha256
+		_img="${_img}.gz"
+		create_sha256 ${_img}
 		cp -l ${_img}* $STAGINGAREA/ 2>/dev/null
 		snapshots_create_latest_symlink ${STAGINGAREA}/$(basename ${_img})
 	done
 
 	if [ -f "${UPDATES_TARBALL_FILENAME}" ]; then
-		sha256 ${UPDATES_TARBALL_FILENAME} > ${UPDATES_TARBALL_FILENAME}.sha256
+		create_sha256 ${UPDATES_TARBALL_FILENAME}
 		cp -l ${UPDATES_TARBALL_FILENAME}* $STAGINGAREA/ 2>/dev/null
 		snapshots_create_latest_symlink ${STAGINGAREA}/$(basename ${UPDATES_TARBALL_FILENAME})
 	fi
 
 	if [ -f "${OVAPATH}" ]; then
 		mkdir -p ${STAGINGAREA}/virtualization
-		sha256 ${OVAPATH} > ${OVAPATH}.sha256
+		create_sha256 ${OVAPATH}
 		cp -l ${OVAPATH}* $STAGINGAREA/virtualization 2>/dev/null
 		snapshots_create_latest_symlink ${STAGINGAREA}/virtualization/$(basename ${OVAPATH})
 	fi
@@ -2372,8 +2514,7 @@ snapshots_scp_files() {
 	fi
 
 	snapshots_update_status ">>> Copying core pkg repo to ${PKG_RSYNC_HOSTNAME}"
-	# Add ./ before last directory, it's an rsync trick to make it chdir to parent directory before sending
-	pkg_repo_rsync $(echo "${CORE_PKG_PATH}" | sed -E 's,/$,,; s,/([^/]*)$,/./\1,')
+	pkg_repo_rsync "${CORE_PKG_PATH}"
 	snapshots_update_status ">>> Finished copying core pkg repo"
 
 	snapshots_update_status ">>> Copying files to ${RSYNCIP}"

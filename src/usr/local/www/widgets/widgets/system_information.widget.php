@@ -63,6 +63,10 @@ include_once("includes/functions.inc.php");
 if ($_REQUEST['getupdatestatus']) {
 	require_once("pkg-utils.inc");
 
+	if (isset($config['system']['firmware']['disablecheck'])) {
+		exit;
+	}
+
 	$system_version = get_system_pkg_version();
 
 	if ($system_version === false) {
@@ -91,10 +95,10 @@ if ($_REQUEST['getupdatestatus']) {
 <?php
 		break;
 	case '=':
-		print(gettext("You are on the latest version."));
+		print(gettext("The system is on the latest version."));
 		break;
 	case '>':
-		print(gettext("You are on a later version than<br />the official release."));
+		print(gettext("The system is on a later version than<br />the official release."));
 		break;
 	default:
 		print(gettext( "<i>Error comparing installed version<br />with latest available</i>"));
@@ -116,7 +120,7 @@ $filesystems = get_mounted_filesystems();
 		<tr>
 			<th><?=gettext("Version");?></th>
 			<td>
-				<strong><?=$g['product_version']?></strong>
+				<strong><?=$g['product_version_string']?></strong>
 				(<?php echo php_uname("m"); ?>)
 				<br />
 				<?=gettext('built on')?> <?php readfile("/etc/version.buildtime"); ?>
@@ -238,9 +242,12 @@ $filesystems = get_mounted_filesystems();
 		<tr>
 			<th><?=gettext("Temperature");?></th>
 			<td>
-				<?php $TempMeter = $temp = get_temp(); ?>
-				<div id="tempPB"></div>
-				<span id="tempmeter"><?= $temp."&#176;C"; ?></span>
+				<?php $temp_deg_c = get_temp(); ?>
+				<div class="progress">
+					<div id="tempPB" class="progress-bar progress-bar-striped" role="progressbar" aria-valuenow="<?=$temp_deg_c?>" aria-valuemin="0" aria-valuemax="100" style="width: <?=$temp_deg_c?>%">
+					</div>
+				</div>
+				<span id="tempmeter"><?= $temp_deg_c . "&deg;C"; ?></span>
 			</td>
 		</tr>
 		<?php endif; ?>
@@ -304,6 +311,7 @@ $filesystems = get_mounted_filesystems();
 
 <script type="text/javascript">
 //<![CDATA[
+<?php if (!isset($config['system']['firmware']['disablecheck'])): ?>
 function systemStatusGetUpdateStatus() {
 	$.ajax({
 		type: 'get',
@@ -319,6 +327,7 @@ function systemStatusGetUpdateStatus() {
 		}
 	});
 }
+<?php endif; ?>
 
 function updateMeters() {
 	url = '/getstats.php';
@@ -336,9 +345,11 @@ function updateMeters() {
 
 }
 
+<?php if (!isset($config['system']['firmware']['disablecheck'])): ?>
 events.push(function(){
 	setTimeout('systemStatusGetUpdateStatus()', 4000);
 });
+<?php endif; ?>
 
 /*   Most widgets update their backend data every 10 seconds.  11 seconds
  *   will ensure that we update the GUI right after the stats are updated.
@@ -391,7 +402,7 @@ function updateMemory(x) {
 
 function updateMbuf(x) {
 	if ($('#mbuf')) {
-		$("#mbuf").html(x);
+		$("#mbuf").html('(' + x + ')');
 	}
 }
 
@@ -421,10 +432,10 @@ function updateCPU(x) {
 
 function updateTemp(x) {
 	if ($("#tempmeter")) {
-		$("#tempmeter").html(x + '\u00B0' + 'C');
+		$("#tempmeter").html(x + '&deg;' + 'C');
 	}
 	if ($('#tempPB')) {
-		$("#tempPB").progressbar( { value: parseInt(x) } );
+		setProgress('tempPB', parseInt(x));
 	}
 }
 

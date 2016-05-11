@@ -177,7 +177,7 @@ if ($_POST) {
 		}
 
 		if ($pconfig['port'] && !is_port($pconfig['port'])) {
-			$input_errors[] = gettext("You must specify a valid port number.");
+			$input_errors[] = gettext("A valid port number must be specified.");
 		}
 
 		if (is_array($pconfig['active_interface']) && !empty($pconfig['active_interface'])) {
@@ -283,7 +283,7 @@ if ($savemsg) {
 }
 
 if (is_subsystem_dirty('unbound')) {
-	print_apply_box(gettext("The DNS resolver configuration has been changed.") . "<br />" . gettext("You must apply the changes in order for them to take effect."));
+	print_apply_box(gettext("The DNS resolver configuration has been changed.") . "<br />" . gettext("The changes must be applied for them to take effect."));
 }
 
 $tab_array = array();
@@ -360,16 +360,15 @@ $section->addInput(new Form_Checkbox(
 	$pconfig['regdhcp']
 ))->setHelp(sprintf('If this option is set, then machines that specify their hostname when requesting a DHCP lease will be registered'.
 					' in the DNS Resolver, so that their name can be resolved.'.
-					' You should also set the domain in %sSystem: General setup%s to the proper value.','<a href="system.php">','</a>'));
+					' The domain in %sSystem: General Setup%s should also be set to the proper value.','<a href="system.php">','</a>'));
 
 $section->addInput(new Form_Checkbox(
 	'regdhcpstatic',
 	'Static DHCP',
 	'Register DHCP static mappings in the DNS Resolver',
 	$pconfig['regdhcpstatic']
-))->setHelp(sprintf('If this option is set, then DHCP static mappings will be registered in the DNS Resolver, so that their name can be '.
-					'resolved. You should also set the domain in %s'.
-					'System: General setup%s to the proper value.','<a href="system.php">','</a>'));
+))->setHelp(sprintf('If this option is set, then DHCP static mappings will be registered in the DNS Resolver, so that their name can be resolved. '.
+					'The domain in %sSystem: General Setup%s should also be set to the proper value.','<a href="system.php">','</a>'));
 
 $btnadv = new Form_Button(
 	'btnadvcustom',
@@ -378,7 +377,7 @@ $btnadv = new Form_Button(
 	'fa-cog'
 );
 
-$btnadv->addClass('btn-info btn-sm');
+$btnadv->setAttribute('type','button')->addClass('btn-info btn-sm');
 
 $section->addInput(new Form_StaticText(
 	'Display Custom Options',
@@ -389,7 +388,7 @@ $section->addInput(new Form_Textarea (
 	'custom_options',
 	'Custom options',
 	$pconfig['custom_options']
-))->setHelp('Enter any additional configuration parameters to add to the DNS Resolver configuration here, separated by a newline');
+))->setHelp('Enter any additional configuration parameters to add to the DNS Resolver configuration here, separated by a newline.');
 
 $form->add($section);
 print($form);
@@ -406,7 +405,7 @@ events.push(function() {
 		var text;
 		// On page load decide the initial state based on the data.
 		if (ispageload) {
-			showadvcustom = "<?=$customoptions?>";
+			showadvcustom = <?=($customoptions ? 'true' : 'false');?>;
 		} else {
 			// It was a click, swap the state.
 			showadvcustom = !showadvcustom;
@@ -436,9 +435,6 @@ events.push(function() {
 		hideInput('btnadvcustom', hide);
 		hideInput('custom_options', hide || !showadvcustom);
 	}
-
-	// Make the 'additional options' button a plain button, not a submit button
-	$("#btnadvcustom").prop('type','button');
 
 	// Un-hide additional controls
 	$('#btnadvcustom').click(function(event) {
@@ -593,7 +589,7 @@ endforeach;
 		" service (if enabled) will automatically serve the LAN IP".
 		" address as a DNS server to DHCP clients so they will use".
 		" the DNS Resolver. If Forwarding is enabled, the DNS Resolver will use the DNS servers".
-		" entered in %sSystem: General setup%s".
+		" entered in %sSystem: General Setup%s".
 		" or those obtained via DHCP or PPP on WAN if &quot;Allow".
 		" DNS server list to be overridden by DHCP/PPP on WAN&quot;".
 		" is checked."), '<a href="system.php">', '</a>'), 'info', false); ?>

@@ -995,7 +995,10 @@ function system_syslogd_start() {
 		}
 
 		$syslogconf .= "!filterlog\n";
-		$syslogconf .= "*.* 								{$log_directive}{$g['varlog_path']}/filter.log\n";
+		if (!isset($syslogcfg['disablelocallogging'])) {
+			$syslogconf .= "*.* 								{$log_directive}{$g['varlog_path']}/filter.log\n";
+		}
+
 		if (isset($syslogcfg['filter'])) {
 			$syslogconf .= system_syslogd_get_remote_servers($syslogcfg, "*.*");
 		}
@@ -1237,7 +1240,6 @@ function system_generate_nginx_config($filename,
 			$maxprocperip = 10;
 		}
 		$captive_portal_maxprocperip = "\t\tlimit_conn addr $maxprocperip;\n";
-
 	}
 
 	if (empty($port)) {
@@ -1278,11 +1280,11 @@ worker_processes  {$max_procs};
 
 EOD;
 
-if (!isset($config['syslog']['nolognginx'])) {
-	$nginx_config .= "error_log  syslog:server=unix:/var/run/log,facility=local5;\n";
-}
+	if (!isset($config['syslog']['nolognginx'])) {
+		$nginx_config .= "error_log  syslog:server=unix:/var/run/log,facility=local5;\n";
+	}
 
-$nginx_config .= <<<EOD
+	$nginx_config .= <<<EOD
 
 events {
     worker_connections  1024;
@@ -1301,24 +1303,16 @@ http {
 
 EOD;
 
-if ($captive_portal !== false) {
-	$nginx_config .= "\tlimit_conn_zone \$binary_remote_addr zone=addr:10m;\n";
-}
-
-$nginx_config .= <<<EOD
-
-	server {
-		listen {$nginx_port};
-		listen [::]:{$nginx_port};
-		client_max_body_size 200m;
-
-		gzip on;
-		gzip_types text/plain text/css text/javascript application/x-javascript text/xml application/xml application/xml+rss application/json;
-
-EOD;
+	if ($captive_portal !== false) {
+		$nginx_config .= "\tlimit_conn_zone \$binary_remote_addr zone=addr:10m;\n";
+	}
 
 	if ($cert <> "" and $key <> "") {
-		$nginx_config .= "\t\tssl             on;\n";
+		$nginx_config .= "\n";
+		$nginx_config .= "\tserver {\n";
+		$nginx_config .= "\t\tlisten {$nginx_port} ssl;\n";
+		$nginx_config .= "\t\tlisten [::]:{$nginx_port} ssl;\n";
+		$nginx_config .= "\n";
 		$nginx_config .= "\t\tssl_certificate         {$g['varetc_path']}/{$cert_location};\n";
 		$nginx_config .= "\t\tssl_certificate_key     {$g['varetc_path']}/{$key_location};\n";
 		$nginx_config .= "\t\tssl_session_timeout     10m;\n";
@@ -1335,17 +1329,30 @@ EOD;
 		$nginx_config .= "\t\tadd_header Strict-Transport-Security \"max-age=31536000\";\n";
 		$nginx_config .= "\t\tadd_header X-Content-Type-Options nosniff;\n";
 		$nginx_config .= "\t\tssl_session_tickets off;\n";
-		$nginx_config .= "\t\tssl_stapling on;\n";
-		$nginx_config .= "\t\tssl_stapling_verify on;\n";
 		$nginx_config .= "\t\tssl_dhparam /etc/dh-parameters.4096;\n";
+	} else {
 		$nginx_config .= "\n";
+		$nginx_config .= "\tserver {\n";
+		$nginx_config .= "\t\tlisten {$nginx_port};\n";
+		$nginx_config .= "\t\tlisten [::]:{$nginx_port};\n";
 	}
+
+	$nginx_config .= <<<EOD
+
+		client_max_body_size 200m;
+
+		gzip on;
+		gzip_types text/plain text/css text/javascript application/x-javascript text/xml application/xml application/xml+rss application/json;
+
+
+EOD;
 
 	if ($captive_portal !== false) {
 		$nginx_config .= <<<EOD
 $captive_portal_maxprocperip
 $cp_hostcheck
 $cp_rewrite
+		log_not_found off;
 
 EOD;
 
@@ -1410,7 +1417,7 @@ EOD;
 	server {
 		listen 80;
 		listen [::]:80;
-		rewrite         ^ https://\$http_host$redirectport\$request_uri? permanent;
+		return 301 https://\$http_host$redirectport\$request_uri;
 	}
 
 EOD;
@@ -1565,7 +1572,7 @@ function system_ntp_setup_pps($serialport) {
 }
 
 
-function system_ntp_configure($start_ntpd=true) {
+function system_ntp_configure() {
 	global $config, $g;
 
 	$driftfile = "/var/db/ntpd.drift";
@@ -1861,11 +1868,6 @@ function system_ntp_configure($start_ntpd=true) {
 		return;
 	}
 
-	/* At bootup we just want to write out the config. */
-	if (!$start_ntpd) {
-		return;
-	}
-
 	/* if ntpd is running, kill it */
 	while (isvalidpid("{$g['varrun_path']}/ntpd.pid")) {
 		killbypid("{$g['varrun_path']}/ntpd.pid");
@@ -1883,24 +1885,6 @@ function system_ntp_configure($start_ntpd=true) {
 	// Note that we are starting up
 	log_error("NTPD is starting up.");
 	return;
-}
-
-function sync_system_time() {
-	global $config, $g;
-
-	if (platform_booting()) {
-		echo gettext("Syncing system time before startup...");
-	}
-
-	/* foreach through servers and write out to ntpd.conf */
-	foreach (explode(' ', $config['system']['timeservers']) as $ts) {
-		mwexec("/usr/local/sbin/ntpdate -s $ts");
-	}
-
-	if (platform_booting()) {
-		echo gettext("done.") . "\n";
-	}
-
 }
 
 function system_halt() {
@@ -1969,20 +1953,6 @@ function system_do_shell_commands($early = 0) {
 		/* execute single item */
 		exec($config['system'][$cmdn]);
 
-	}
-}
-
-function system_console_configure() {
-	global $config, $g;
-	if (isset($config['system']['developerspew'])) {
-		$mt = microtime();
-		echo "system_console_configure() being called $mt\n";
-	}
-
-	if (isset($config['system']['disableconsolemenu'])) {
-		touch("{$g['varetc_path']}/disableconsole");
-	} else {
-		unlink_if_exists("{$g['varetc_path']}/disableconsole");
 	}
 }
 
@@ -2159,6 +2129,21 @@ EOD;
 	return 0;
 }
 
+function system_get_serial() {
+	unset($output);
+	$_gb = exec('/bin/kenv smbios.system.serial 2>/dev/null', $output);
+	$serial = $output[0];
+
+	$vm_guest = get_single_sysctl('kern.vm_guest');
+
+	if (strlen($serial) >= 10 && strlen($serial) <= 16 &&
+	    $vm_guest == 'none') {
+		return $serial;
+	}
+
+	return get_single_sysctl('kern.hostuuid');
+}
+
 /*
  * attempt to identify the specific platform (for embedded systems)
  * Returns an array with two elements:
@@ -2168,18 +2153,14 @@ EOD;
 function system_identify_specific_platform() {
 	global $g;
 
-	if ($g['platform'] == 'generic-pc') {
-		return array('name' => 'generic-pc', 'descr' => gettext("Generic PC"));
-	}
-
-	if ($g['platform'] == 'generic-pc-cdrom') {
-		return array('name' => 'generic-pc-cdrom', 'descr' => gettext("Generic PC (CD-ROM)"));
-	}
+	$hw_model = get_single_sysctl('hw.model');
 
 	/* Try to guess from smbios strings */
-	unset($output);
-	$_gb = exec('/bin/kenv smbios.system.product 2>/dev/null', $output);
-	switch ($output[0]) {
+	unset($product);
+	unset($maker);
+	$_gb = exec('/bin/kenv smbios.system.product 2>/dev/null', $product);
+	$_gb = exec('/bin/kenv smbios.system.maker 2>/dev/null', $maker);
+	switch ($product[0]) {
 		case 'FW7541':
 			return (array('name' => 'FW7541', 'descr' => 'Netgate FW7541'));
 			break;
@@ -2187,7 +2168,24 @@ function system_identify_specific_platform() {
 			return (array('name' => 'APU', 'descr' => 'Netgate APU'));
 			break;
 		case 'RCC-VE':
-			return (array('name' => 'RCC-VE', 'descr' => 'Netgate RCC-VE'));
+			$result = array();
+			$result['name'] = 'RCC-VE';
+
+			/* Detect specific models */
+			if (!function_exists('does_interface_exist')) {
+				require_once("interfaces.inc");
+			}
+			if (!does_interface_exist('igb4')) {
+				$result['model'] = 'SG-2440';
+			} elseif (strpos($hw_model, "C2558") !== false) {
+				$result['model'] = 'SG-4860';
+			} elseif (strpos($hw_model, "C2758") !== false) {
+				$result['model'] = 'SG-8860';
+			} else {
+				$result['model'] = 'RCC-VE';
+			}
+			$result['descr'] = 'Netgate ' . $result['model'];
+			return $result;
 			break;
 		case 'DFFv2':
 			return (array('name' => 'RCC-DFF', 'descr' => 'Netgate RCC-DFF'));
@@ -2202,6 +2200,11 @@ function system_identify_specific_platform() {
 		case 'SYS-5018D-FN4T':
 			return (array('name' => 'XG-1540', 'descr' => 'Super Micro XG-1540'));
 			break;
+		case 'Virtual Machine':
+			if ($maker[0] == "Microsoft Corporation") {
+				return (array('name' => 'Hyper-V', 'descr' => 'Hyper-V Virtual Machine'));
+			}
+			break;
 	}
 
 	/* the rest of the code only deals with 'embedded' platforms */
@@ -2209,29 +2212,27 @@ function system_identify_specific_platform() {
 		return array('name' => $g['platform'], 'descr' => $g['platform']);
 	}
 
-	$dmesg = get_single_sysctl('hw.model');
-
-	if (strpos($dmesg, "PC Engines WRAP") !== false) {
+	if (strpos($hw_model, "PC Engines WRAP") !== false) {
 		return array('name' => 'wrap', 'descr' => gettext('PC Engines WRAP'));
 	}
 
-	if (strpos($dmesg, "PC Engines ALIX") !== false) {
+	if (strpos($hw_model, "PC Engines ALIX") !== false) {
 		return array('name' => 'alix', 'descr' => gettext('PC Engines ALIX'));
 	}
 
-	if (preg_match("/Soekris net45../", $dmesg, $matches)) {
+	if (preg_match("/Soekris net45../", $hw_model, $matches)) {
 		return array('name' => 'net45xx', 'descr' => $matches[0]);
 	}
 
-	if (preg_match("/Soekris net48../", $dmesg, $matches)) {
+	if (preg_match("/Soekris net48../", $hw_model, $matches)) {
 		return array('name' => 'net48xx', 'descr' => $matches[0]);
 	}
 
-	if (preg_match("/Soekris net55../", $dmesg, $matches)) {
+	if (preg_match("/Soekris net55../", $hw_model, $matches)) {
 		return array('name' => 'net55xx', 'descr' => $matches[0]);
 	}
 
-	unset($dmesg);
+	unset($hw_model);
 
 	$dmesg_boot = system_get_dmesg_boot();
 	if (strpos($dmesg_boot, "PC Engines ALIX") !== false) {

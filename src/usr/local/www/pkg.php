@@ -292,7 +292,7 @@ events.push(function() {
 function save_changes_to_xml(xml) {
 	var ids = $('#mainarea table tbody').sortable('serialize', {key:"ids[]"});
 	var strloading="<?=gettext('Saving changes...')?>";
-	if (confirm("<?=gettext("Do you really want to save changes?")?>")) {
+	if (confirm("<?=gettext("Confirmation Required to save changes.")?>")) {
 		$.ajax({
 			type: 'get',
 			cache: false,
@@ -490,9 +490,9 @@ if ($savemsg) {
 				}
 			}
 			if ($pkg['adddeleteeditpagefields']['movable']) {
-				echo "<tr valign=\"top\" class=\"sortable\" id=\"id_{$i}\">\n";
+				echo "<tr style=\"vertical-align: top\" class=\"sortable\" id=\"id_{$i}\">\n";
 			} else {
-				echo "<tr valign=\"top\">\n";
+				echo "<tr style=\"vertical-align: top\">\n";
 			}
 			if ($pkg['adddeleteeditpagefields']['columnitem'] != "") {
 				foreach ($pkg['adddeleteeditpagefields']['columnitem'] as $column) {
@@ -515,18 +515,23 @@ if ($savemsg) {
 					} else if ($column['type'] == "interface") {
 						echo $column['prefix'] . $iflist[$fieldname] . $column['suffix'];
 					} else {
+						$display_text = "";
 						#Check if columnitem has an encoding field declared
 						if ($column['encoding'] == "base64") {
-							echo $column['prefix'] . base64_decode($fieldname) . $column['suffix'];
+							$display_text = $column['prefix'] . base64_decode($fieldname) . $column['suffix'];
 						#Check if there is a custom info to show when $fieldname is not empty
 						} else if ($column['listmodeon'] && $fieldname != "") {
-							echo $column['prefix'] . gettext($column['listmodeon']). $column['suffix'];
+							$display_text = $column['prefix'] . gettext($column['listmodeon']). $column['suffix'];
 						#Check if there is a custom info to show when $fieldname is empty
 						} else if ($column['listmodeoff'] && $fieldname == "") {
-							echo $column['prefix'] .gettext($column['listmodeoff']). $column['suffix'];
+							$display_text = $column['prefix'] .gettext($column['listmodeoff']). $column['suffix'];
 						} else {
-							echo $column['prefix'] . $fieldname ." ". $column['suffix'];
+							$display_text = $column['prefix'] . $fieldname ." ". $column['suffix'];
 						}
+						if (!isset($column['allow_html'])) {
+							$display_text = htmlspecialchars($display_text);
+						}
+						echo $display_text;
 					}
 ?>
 					</td>
@@ -534,7 +539,7 @@ if ($savemsg) {
 				} // foreach columnitem
 			} // if columnitem
 ?>
-					<td valign="middle" class="list text-nowrap">
+					<td style="vertical-align: middle" class="list text-nowrap">
 						<table border="0" cellspacing="0" cellpadding="1" summary="icons">
 							<tr>
 <?php

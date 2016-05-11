@@ -214,7 +214,7 @@ if ($_POST) {
 		$input_errors[] = gettext("A valid MAC address must be specified.");
 	}
 	if ($static_arp_enabled && !$_POST['ipaddr']) {
-		$input_errors[] = gettext("Static ARP is enabled.  You must specify an IP address.");
+		$input_errors[] = gettext("Static ARP is enabled.  An IP address must be specified.");
 	}
 
 	/* check for overlaps */
@@ -299,7 +299,7 @@ if ($_POST) {
 	}
 	if (($_POST['ddnsdomainkey'] && !$_POST['ddnsdomainkeyname']) ||
 	    ($_POST['ddnsdomainkeyname'] && !$_POST['ddnsdomainkey'])) {
-		$input_errors[] = gettext("You must specify both a valid domain key and key name.");
+		$input_errors[] = gettext("Both a valid domain key and key name must be specified.");
 	}
 	if ($_POST['domainsearchlist']) {
 		$domain_array=preg_split("/[ ;]+/", $_POST['domainsearchlist']);
@@ -439,7 +439,7 @@ $btnmymac = new Form_Button(
 	'fa-clone'
 	);
 
-$btnmymac->removeClass('btn-primary')->addClass('btn-success btn-sm');
+$btnmymac->setAttribute('type','button')->removeClass('btn-primary')->addClass('btn-success btn-sm');
 
 $group = new Form_Group('MAC controls');
 $group->add($macaddress);
@@ -489,7 +489,7 @@ $section->addInput(new Form_Input(
 	'Description',
 	'text',
 	$pconfig['descr']
-))->setHelp('You may enter a description here for your reference (not parsed).');
+))->setHelp('A description may be entered here for administrative reference (not parsed).');
 
 $section->addInput(new Form_Checkbox(
 	'arp_table_static_entry',
@@ -560,21 +560,21 @@ $section->addInput(new Form_Input(
 	'Gateway',
 	'text',
 	$pconfig['gateway']
-))->setHelp('The default is to use the IP on this interface of the firewall as the gateway. Specify an alternate gateway here if this is not the correct gateway for your network.');
+))->setHelp('The default is to use the IP on this interface of the firewall as the gateway. Specify an alternate gateway here if this is not the correct gateway for the network.');
 
 $section->addInput(new Form_Input(
 	'domain',
 	'Domain name',
 	'text',
 	$pconfig['domain']
-))->setHelp('The default is to use the domain name of this system as the default domain name provided by DHCP. You may specify an alternate domain name here. ');
+))->setHelp('The default is to use the domain name of this system as the default domain name provided by DHCP. An alternate domain name may be specified here. ');
 
 $section->addInput(new Form_Input(
 	'domainsearchlist',
 	'Domain search list',
 	'text',
 	$pconfig['domainsearchlist']
-))->setHelp('The DHCP server can optionally provide a domain search list. Use the semicolon character as separator');
+))->setHelp('The DHCP server can optionally provide a domain search list. Use the semicolon character as separator.');
 
 $section->addInput(new Form_Input(
 	'deftime',
@@ -597,7 +597,7 @@ $btnadv = new Form_Button(
 	'fa-cog'
 );
 
-$btnadv->addClass('btn-info btn-sm');
+$btnadv->setAttribute('type','button')->addClass('btn-info btn-sm');
 
 $section->addInput(new Form_StaticText(
 	'Dynamic DNS',
@@ -645,7 +645,7 @@ $btnadv = new Form_Button(
 	'fa-cog'
 );
 
-$btnadv->addClass('btn-info btn-sm');
+$btnadv->setAttribute('type','button')->addClass('btn-info btn-sm');
 
 $section->addInput(new Form_StaticText(
 	'NTP servers',
@@ -681,7 +681,7 @@ $btnadv = new Form_Button(
 	'fa-cog'
 );
 
-$btnadv->addClass('btn-info btn-sm');
+$btnadv->setAttribute('type','button')->addClass('btn-info btn-sm');
 
 $section->addInput(new Form_StaticText(
 	'TFTP servers',
@@ -738,8 +738,6 @@ events.push(function() {
 		$('#btnadvdns').html('<i class="fa fa-cog"></i> ' + text);
 	}
 
-	$('#btnadvdns').prop('type', 'button');
-
 	$('#btnadvdns').click(function(event) {
 		show_advdns();
 	});
@@ -775,8 +773,6 @@ events.push(function() {
 		$('#btnadvntp').html('<i class="fa fa-cog"></i> ' + text);
 	}
 
-	$('#btnadvntp').prop('type', 'button');
-
 	$('#btnadvntp').click(function(event) {
 		show_advntp();
 	});
@@ -811,14 +807,9 @@ events.push(function() {
 		$('#btnadvtftp').html('<i class="fa fa-cog"></i> ' + text);
 	}
 
-	$('#btnadvtftp').prop('type', 'button');
-
 	$('#btnadvtftp').click(function(event) {
 		show_advtftp();
 	});
-
-	// Make the ‘Copy My MAC’ button a plain button, not a submit button
-	$("#btnmymac").prop('type','button');
 
 	// On click, copy the hidden 'mymac' text to the 'mac' input
 	$("#btnmymac").click(function() {

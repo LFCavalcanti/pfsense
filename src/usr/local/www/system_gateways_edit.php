@@ -147,7 +147,7 @@ if ($_POST) {
 		$input_errors[] = "A valid gateway name must be specified.";
 	}
 	if (!is_validaliasname($_POST['name'])) {
-		$input_errors[] = gettext("The gateway name must not contain invalid characters.");
+		$input_errors[] = invalidaliasnamemsg($_POST['name'], gettext("gateway"));
 	} else if (isset($_POST['disabled'])) {
 		// We have a valid gateway name that the user wants to mark as disabled.
 		// Check if the gateway name is used in any gateway group.
@@ -302,7 +302,7 @@ if ($_POST) {
 			}
 			if (is_ipaddr($_POST['monitor'])) {
 				if (($gateway['monitor'] <> "") && ($_POST['monitor'] == $gateway['monitor']) && ($gateway['attribute'] !== "system")) {
-					$input_errors[] = sprintf(gettext('The monitor IP address "%s" is already in use. You must choose a different monitor IP.'), $_POST['monitor']);
+					$input_errors[] = sprintf(gettext('The monitor IP address "%s" is already in use. A different monitor IP must be chosen.'), $_POST['monitor']);
 					break;
 				}
 			}
@@ -698,7 +698,7 @@ $section->addInput(new Form_Input(
 	'Description',
 	'text',
 	$pconfig['descr']
-))->setHelp('You may enter a description here for your reference (not parsed).');
+))->setHelp('A description may be entered here for reference (not parsed).');
 
 // Add a button to provide access to the advanced fields
 $btnadv = new Form_Button(
@@ -708,7 +708,7 @@ $btnadv = new Form_Button(
 	'fa-cog'
 );
 
-$btnadv->addClass('btn-info btn-sm');
+$btnadv->setAttribute('type','button')->addClass('btn-info btn-sm');
 
 $section->addInput(new Form_StaticText(
 	null,
@@ -829,7 +829,7 @@ $section->addInput(new Form_StaticText(
 		'ratio between these values control the accuracy of the numbers reported and ' .
 		'the timeliness of alerts.') .
 	'<br/><br/>' .
-	gettext('A longer time period will will provide smoother results for round trip time ' .
+	gettext('A longer time period will provide smoother results for round trip time ' .
 		'and loss, but will increase the time before a latency or loss alert is triggered.') .
 	'<br/><br/>' .
 	gettext('A shorter probe interval will decrease the time required before a latency ' .
@@ -845,8 +845,8 @@ $section->addInput(new Form_StaticText(
 	gettext('Rounding up to the nearest whole number will yield the resolution of loss ' .
 		'reporting in percent. The default values provide a resolution of 1%.') .
 	'<br/><br/>' .
-	gettext('The default settings are recommended for most use cases. However if you ' .
-		'change the settings, please observe the following restrictions:') .
+	gettext('The default settings are recommended for most use cases. However if ' .
+		'changing the settings, please observe the following restrictions:') .
 	'<br/><br/>' .
 	gettext('- The time period must be greater than twice the probe interval plus the loss ' .
 		'interval. This guarantees there is at least one completed probe at all times. ') .
@@ -910,8 +910,6 @@ events.push(function() {
 		}
 		$('#btnadvopts').html('<i class="fa fa-cog"></i> ' + text);
 	}
-
-	$('#btnadvopts').prop('type', 'button');
 
 	$('#btnadvopts').click(function(event) {
 		show_advopts();

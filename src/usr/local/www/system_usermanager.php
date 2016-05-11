@@ -660,7 +660,7 @@ if ($act == "new" || $act == "edit" || $input_errors):
 		'Full name',
 		'text',
 		htmlspecialchars($pconfig['descr'])
-	))->setHelp('User\'s full name, for your own information only');
+	))->setHelp('User\'s full name, for administrative information only');
 
 	if ($ro) {
 		$input->setDisabled();
@@ -719,16 +719,16 @@ if ($act == "new" || $act == "edit" || $input_errors):
 		'Move to "Member of" list',
 		null,
 		'fa-angle-double-right'
-	))->removeClass('btn-primary')->addClass('btn-info btn-sm');
+	))->setAttribute('type','button')->removeClass('btn-primary')->addClass('btn-info btn-sm');
 
 	$group->add(new Form_Button(
 		'movetodisabled',
 		'Move to "Not member of" list',
 		null,
 		'fa-angle-double-left'
-	))->removeClass('btn-primary')->addClass('btn-info btn-sm');
+	))->setAttribute('type','button')->removeClass('btn-primary')->addClass('btn-info btn-sm');
 
-	$group->setHelp('Hold down CTRL (pc)/COMMAND (mac) key to select multiple items');
+	$group->setHelp('Hold down CTRL (PC)/COMMAND (Mac) key to select multiple items.');
 	$section->add($group);
 
 	// ==== Button for adding user certificate ================================
@@ -804,7 +804,7 @@ if ($act == "new" || $act == "edit" || $input_errors):
 				array(
 					512 => '512 bits',
 					1024 => '1024 bits',
-					2048 => '2049 bits',
+					2048 => '2048 bits',
 					4096 => '4096 bits',
 				)
 			));
@@ -851,10 +851,6 @@ print $form;
 <script type="text/javascript">
 //<![CDATA[
 events.push(function() {
-
-	// Make buttons plain buttons, not submit
-	$("#movetodisabled").prop('type','button');
-	$("#movetoenabled").prop('type','button');
 
 	// On click . .
 	$("#movetodisabled").click(function() {

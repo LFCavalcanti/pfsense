@@ -234,7 +234,7 @@ $section->addInput(new Form_Select(
 	'GRE tunnel subnet',
 	$pconfig['tunnel-remote-net'],
 	array_combine(range(128, 1, -1), range(128, 1, -1))
-))->setHelp('The subnet is used for determining the network that is tunnelled');
+))->setHelp('The subnet is used for determining the network that is tunnelled.');
 
 $section->addInput(new Form_Checkbox(
 	'link0',
@@ -262,7 +262,7 @@ $section->addInput(new Form_Input(
 	'Description',
 	'text',
 	$pconfig['descr']
-))->setHelp('You may enter a description here for your reference (not parsed).');
+))->setHelp('A description may be entered here for administrative reference (not parsed).');
 
 $section->addInput(new Form_Input(
 	'greif',

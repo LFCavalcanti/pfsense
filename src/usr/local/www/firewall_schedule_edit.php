@@ -125,13 +125,8 @@ if ($_POST) {
 		$input_errors[] = gettext("Schedule name cannot be blank.");
 	}
 
-	$x = is_validaliasname($_POST['name']);
-	if (!isset($x)) {
-		$input_errors[] = gettext("Reserved word used for schedule name.");
-	} else {
-		if (is_validaliasname($_POST['name']) == false) {
-			$input_errors[] = sprintf(gettext("The schedule name must be less than 32 characters long, may not consist of only numbers, may not consist of only underscores, and may only contain the following characters: %s"), 'a-z, A-Z, 0-9, _');
-		}
+	if (!is_validaliasname($_POST['name'])) {
+		$input_errors[] = invalidaliasnamemsg($_POST['name'], gettext("schedule"));
 	}
 
 	/* check for name conflicts */
@@ -409,7 +404,7 @@ $section->addInput(new Form_Input(
 	'Description',
 	'text',
 	$pconfig['descr']
-))->setHelp('You may enter a description here for your reference (not parsed). ');
+))->setHelp('A description may be entered here for administrative reference (not parsed). ');
 
 $section->addInput(new Form_Select(
 	'monthsel',
@@ -462,7 +457,7 @@ $section->addInput(new Form_Input(
 	'Time range description',
 	'text',
 	$pconfig['timerangedescr']
-))->setHelp('You may enter a description here for your reference (not parsed). ');
+))->setHelp('A description may be entered here for administrative reference (not parsed). ');
 
 $group = new Form_Group(null);
 
@@ -471,14 +466,14 @@ $group->add(new Form_Button(
 	'Add Time',
 	null,
 	'fa-plus'
-))->addClass('btn-success btn-sm');
+))->setAttribute('type','button')->addClass('btn-success btn-sm');
 
 $group->add(new Form_Button(
 	'btnclrsel',
 	'Clear selection',
 	null,
 	'fa-undo'
-))->addClass('btn-info btn-sm');
+))->setAttribute('type','button')->addClass('btn-info btn-sm');
 
 $section->add($group);
 
@@ -625,7 +620,7 @@ if ($getSchedule) {
 
 			$group = new Form_Group('');
 			$group->add(new Form_Input(
-				'tempFriendlyTime',
+				'tempFriendlyTime' . $counter,
 				null,
 				'text',
 				$tempFriendlyTime
@@ -657,7 +652,7 @@ if ($getSchedule) {
 				'Delete',
 				null,
 				'fa-trash'
-			))->addClass('btn-xs btn-warning');
+			))->setAttribute('type','button')->addClass('btn-xs btn-warning');
 
 			$group->add(new Form_Input(
 				'schedule' . $counter,
@@ -695,23 +690,15 @@ events.push(function() {
 		update_month();
 	});
 
-	// Make the ‘clear’ button a plain button, not a submit button
-	$('#btnclrsel').prop('type', 'button');
-
 	$('#btnclrsel').click(function() {
 		clearCalendar();
 		clearTime();
 		clearDescr();
 	});
 
-	// Make the ‘Add time’ button a plain button, not a submit button
-	$('#btnaddtime').prop('type', 'button');
-
 	$('#btnaddtime').click(function() {
 		processEntries();
 	});
-
-	$('[id^=Delete]').prop('type', 'button');
 
 	$('[id^=Delete]').click(function(event) {
 		fse_delete_row(event.target.id.slice(6));
@@ -852,7 +839,7 @@ function update_month() {
 
 function checkForRanges() {
 	if (daysSelected != "") {
-		alert("You have not saved the specified time range. Please click 'Add Time' button to save the time range.");
+		alert("The specified time range has not been saved. Please click 'Add Time' button to save the time range.");
 		return false;
 	} else {
 		return true;
@@ -1092,7 +1079,7 @@ function addTimeRange() {
 
 	} else {
 		//no days were selected, alert user
-		alert ("You must select at least 1 day before adding time");
+		alert ("At least 1 day must be selected before adding time");
 	}
 }
 
@@ -1138,9 +1125,9 @@ function insertElements(tempFriendlyTime, starttimehour, starttimemin, stoptimeh
 	// Template for the schedule definition. '@' will be replaced with the row number using .replace()
 	rowhtml =
 	'<div class="form-group schedulegrp' + counter + '">' +
-		'<label for="tempFriendlyTime" class="col-sm-2 control-label"></label>' +
+		'<label for="tempFriendlyTime@" class="col-sm-2 control-label"></label>' +
 		'<div class="col-sm-2">' +
-			'<input class="form-control" name="tempFriendlyTime" id="tempFriendlyTime" type="text" value="' + tempFriendlyTime + '"/>' +
+			'<input class="form-control" name="tempFriendlyTime@" id="tempFriendlyTime@" type="text" value="' + tempFriendlyTime + '"/>' +
 			'<span class="help-block">Day(s)</span>' +
 		'</div>' +
 		'<div class="col-sm-2">' +

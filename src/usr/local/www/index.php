@@ -90,7 +90,7 @@ if ($g['disablecrashreporter'] != true) {
 	// Check to see if we have a crash report
 	$x = 0;
 	if (file_exists("/tmp/PHP_errors.log")) {
-		$total = `/usr/bin/grep -vi warning /tmp/PHP_errors.log | /usr/bin/wc -l | /usr/bin/awk '{ print $1 }'`;
+		$total = `/bin/cat /tmp/PHP_errors.log | /usr/bin/wc -l | /usr/bin/awk '{ print $1 }'`;
 		if ($total > 0) {
 			$x++;
 		}
@@ -215,7 +215,7 @@ if (file_exists('/conf/trigger_initial_wizard')) {
 			<div class="col-sm-offset-3 col-sm-6 col-xs-12">
 				<font color="white">
 				<p><h3><?=sprintf(gettext("Welcome to %s!\n"), $g['product_name'])?></h3></p>
-				<p><?=gettext("One moment while we start the initial setup wizard.")?></p>
+				<p><?=gettext("One moment while the initial setup wizard starts.")?></p>
 				<p><?=gettext("Embedded platform users: Please be patient, the wizard takes a little longer to run than the normal GUI.")?></p>
 				<p><?=sprintf(gettext("To bypass the wizard, click on the %s logo on the initial page."), $g['product_name'])?></p>
 				</font>
@@ -510,7 +510,7 @@ events.push(function() {
 	// provide a warning message if the user tries to change page before saving
 	$(window).bind('beforeunload', function(){
 		if (dirty) {
-			return ("<?=gettext('You have moved one or more widgets but have not yet saved')?>");
+			return ("<?=gettext('One or more widgets have been moved but have not yet been saved')?>");
 		} else {
 			return undefined;
 		}

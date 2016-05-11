@@ -326,7 +326,7 @@ if (isset($_POST['apply'])) {
 		}
 		if (($_POST['ddnsdomainkey'] && !$_POST['ddnsdomainkeyname']) ||
 		    ($_POST['ddnsdomainkeyname'] && !$_POST['ddnsdomainkey'])) {
-			$input_errors[] = gettext("You must specify both a valid domain key and key name.");
+			$input_errors[] = gettext("Both a valid domain key and key name must be specified.");
 		}
 		if ($_POST['domainsearchlist']) {
 			$domain_array=preg_split("/[ ;]+/", $_POST['domainsearchlist']);
@@ -388,7 +388,7 @@ if (isset($_POST['apply'])) {
 
 			/* make sure that the DHCP Relay isn't enabled on this interface */
 			if (isset($config['dhcrelay'][$if]['enable'])) {
-				$input_errors[] = sprintf(gettext("You must disable the DHCP relay on the %s interface before enabling the DHCP server."), $iflist[$if]);
+				$input_errors[] = sprintf(gettext("The DHCP relay on the %s interface must be disabled before enabling the DHCP server."), $iflist[$if]);
 			}
 
 
@@ -504,7 +504,7 @@ if ($_GET['act'] == "del") {
 
 $pgtitle = array(gettext("Services"), htmlspecialchars(gettext("DHCPv6 Server & RA")));
 
-if (!empty($if) && !$dhcrelay_enabled && isset($iflist[$if])) {
+if (!empty($if) && isset($iflist[$if])) {
 	$pgtitle[] = $iflist[$if];
 	$pgtitle[] = gettext("DHCPv6 Server");
 }
@@ -522,12 +522,10 @@ if ($savemsg) {
 
 if ($dhcrelay_enabled) {
 	print_info_box(gettext("DHCPv6 Relay is currently enabled. Cannot enable the DHCPv6 Server service while the DHCPv6 Relay is enabled on any interface."), 'danger', false);
-	include("foot.inc");
-	exit;
 }
 
 if (is_subsystem_dirty('staticmaps')) {
-	print_apply_box(gettext('The static mapping configuration has been changed.') . '<br />' . gettext('You must apply the changes in order for them to take effect.'));
+	print_apply_box(gettext('The static mapping configuration has been changed.') . '<br />' . gettext('The changes must be applied for them to take effect.'));
 }
 
 /* active tabs */
@@ -589,6 +587,11 @@ $tab_array = array();
 $tab_array[] = array(gettext("DHCPv6 Server"),		 true,	"services_dhcpv6.php?if={$if}");
 $tab_array[] = array(gettext("Router Advertisements"), false, "services_router_advertisements.php?if={$if}");
 display_top_tabs($tab_array, false, 'nav nav-tabs');
+
+if ($dhcrelay_enabled) {
+	include("foot.inc");
+	exit;
+}
 
 $form = new Form();
 
@@ -696,7 +699,7 @@ $section->addInput(new Form_Select(
 		'63' => '63',
 		'64' => '64'
 		)
-))->setHelp('You can define a Prefix range here for DHCP Prefix Delegation. This allows for assigning networks to subrouters. The start and end of the range must end on boundaries of the prefix delegation size.');
+))->setHelp('A Prefix range can be defined here for DHCP Prefix Delegation. This allows for assigning networks to subrouters. The start and end of the range must end on boundaries of the prefix delegation size.');
 
 $group = new Form_Group('DNS Servers');
 
@@ -718,14 +721,14 @@ $section->addInput(new Form_Input(
 	'Domain Name',
 	'text',
 	$pconfig['domain']
-))->setHelp('The default is to use the domain name of this system as the default domain name provided by DHCP. You may specify an alternate domain name here. ');
+))->setHelp('The default is to use the domain name of this system as the default domain name provided by DHCP. An alternate domain name may be specified here. ');
 
 $section->addInput(new Form_Input(
 	'domainsearchlist',
 	'Domain search list',
 	'text',
 	$pconfig['domainsearchlist']
-))->setHelp('The DHCP server can optionally provide a domain search list. Use the semicolon character as separator');
+))->setHelp('The DHCP server can optionally provide a domain search list. Use the semicolon character as separator.');
 
 $section->addInput(new Form_Input(
 	'deftime',
@@ -759,7 +762,7 @@ $btnadv = new Form_Button(
 	'fa-cog'
 );
 
-$btnadv->addClass('btn-info btn-sm');
+$btnadv->setAttribute('type','button')->addClass('btn-info btn-sm');
 
 $section->addInput(new Form_StaticText(
 	'Dynamic DNS',
@@ -827,7 +830,7 @@ $btnadv = new Form_Button(
 	'fa-cog'
 );
 
-$btnadv->addClass('btn-info btn-sm');
+$btnadv->setAttribute('type','button')->addClass('btn-info btn-sm');
 
 $section->addInput(new Form_StaticText(
 	'NTP servers',
@@ -863,7 +866,7 @@ $btnadv = new Form_Button(
 	'fa-cog'
 );
 
-$btnadv->addClass('btn-info btn-sm');
+$btnadv->setAttribute('type','button')->addClass('btn-info btn-sm');
 
 $section->addInput(new Form_StaticText(
 	'LDAP',
@@ -884,7 +887,7 @@ $btnadv = new Form_Button(
 	'fa-cog'
 );
 
-$btnadv->addClass('btn-info btn-sm');
+$btnadv->setAttribute('type','button')->addClass('btn-info btn-sm');
 
 $section->addInput(new Form_StaticText(
 	'Network booting',
@@ -912,7 +915,7 @@ $btnadv = new Form_Button(
 	'fa-cog'
 );
 
-$btnadv->addClass('btn-info btn-sm');
+$btnadv->setAttribute('type','button')->addClass('btn-info btn-sm');
 
 $section->addInput(new Form_StaticText(
 	'Additional BOOTP/DHCP Options',
@@ -991,7 +994,7 @@ print($form);
 <?php
 print_info_box(
 	sprintf(
-		gettext('The DNS servers entered in %1$sSystem: General setup%3$s (or the %2$sDNS forwarder%3$s if enabled) will be assigned to clients by the DHCP server.'),
+		gettext('The DNS servers entered in %1$sSystem: General Setup%3$s (or the %2$sDNS forwarder%3$s if enabled) will be assigned to clients by the DHCP server.'),
 		'<a href="system.php">',
 		'<a href="services_dnsmasq.php"/>',
 		'</a>') .
@@ -1106,8 +1109,6 @@ events.push(function() {
 		$('#btnadvdns').html('<i class="fa fa-cog"></i> ' + text);
 	}
 
-	$('#btnadvdns').prop('type', 'button');
-
 	$('#btnadvdns').click(function(event) {
 		show_advdns();
 	});
@@ -1143,8 +1144,6 @@ events.push(function() {
 		$('#btnadvntp').html('<i class="fa fa-cog"></i> ' + text);
 	}
 
-	$('#btnadvntp').prop('type', 'button');
-
 	$('#btnadvntp').click(function(event) {
 		show_advntp();
 	});
@@ -1178,8 +1177,6 @@ events.push(function() {
 		}
 		$('#btnadvldap').html('<i class="fa fa-cog"></i> ' + text);
 	}
-
-	$('#btnadvldap').prop('type', 'button');
 
 	$('#btnadvldap').click(function(event) {
 		show_advldap();
@@ -1216,8 +1213,6 @@ events.push(function() {
 		$('#btnadvnetboot').html('<i class="fa fa-cog"></i> ' + text);
 	}
 
-	$('#btnadvnetboot').prop('type', 'button');
-
 	$('#btnadvnetboot').click(function(event) {
 		show_advnetboot();
 	});
@@ -1253,8 +1248,6 @@ events.push(function() {
 		}
 		$('#btnadvopts').html('<i class="fa fa-cog"></i> ' + text);
 	}
-
-	$('#btnadvopts').prop('type', 'button');
 
 	$('#btnadvopts').click(function(event) {
 		show_advopts();

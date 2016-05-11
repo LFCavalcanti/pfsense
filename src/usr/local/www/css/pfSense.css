@@ -1,5 +1,6 @@
 @import url("/vendor/bootstrap/css/bootstrap.min.css");
 @import url("/css/fonts/roboto.css");
+@import url("/vendor/jquery/jquery-ui/themes/smoothness/theme.css");
 
 html {
     position: relative;
@@ -52,22 +53,6 @@ h1 a:hover, h1 a:active {
     padding-top: 60px;
 }
 
-.breadcrumb {
-    font-size: 22px;
-    background-color: #E0E0E0;
-    margin-bottom: 10px;
-    border-radius: 0;
-    box-shadow: 0px 1px 10px rgba(0,0,0,.4);
-}
-
-.breadcrumb>li+li:before {
-    color: #B71C1C;
-}
-
-ul.context-links li a {
-    color: #B71C1C;
-}
-
 .ui-sortable-handle {
     cursor: move;
 }
@@ -105,8 +90,7 @@ tr.disabled th {
 }
 
 .navbar-brand {
-    /* vertically center logo  */
-    padding-top: 7px;
+    padding: 7px 0 0 5px;
 }
 
 .nav>li>a {
@@ -290,6 +274,9 @@ tr.disabled th {
 .header {
     position: relative;
     margin: 10px 0 20px 0;
+    box-shadow: 0px 1px 10px rgba(0,0,0,.3);
+    margin-bottom: 10px;
+    background-color: #E0E0E0;
 }
 
 .header .context-links {
@@ -302,6 +289,19 @@ tr.disabled th {
     float: left;
     display: inline;
     margin-left: 10px;
+}
+
+.breadcrumb {
+    background-color: #E0E0E0;
+    font-size: 22px;
+}
+
+.breadcrumb>li+li:before {
+    color: #B71C1C;
+}
+
+ul.context-links li a {
+    color: #B71C1C;
 }
 
 /** Form tweaks */
@@ -474,7 +474,7 @@ footer a {
 
 .bg-info {
     color: #01579B;
-    background-color: #E1F5FE;
+    background-color: #B3E5FC;
 }
 
 .bg-danger {
@@ -489,7 +489,7 @@ footer a {
 
 .bg-success {
     color: #1B5E20;
-    background-color: #E8F5E9;
+    background-color: #C8E6C9;
 }
 
 .btn-success {
@@ -562,6 +562,14 @@ footer a {
 {
     padding-right: 4px;
     padding-left: 4px;
+}
+
+.btn-group .btn {
+    margin-right: 5px;
+}
+
+.btn-group .btn:last-child {
+    margin-right: 0px;
 }
 
 .list-group {
@@ -773,6 +781,22 @@ ul.tree li .over{
     }
 }
 
+ @media (max-width: 767px) {
+    .header {
+        margin-bottom: 5px;
+    }
+
+    .breadcrumb {
+        font-size: 14px;
+        padding: 15px;
+        width: 50%;
+    }
+
+    .breadcrumb li:not(:last-child), .breadcrumb>li+li:before {
+        display: none;
+    }
+}
+
 /** Override text-warning with something less red. */
 .text-warning {
 	color: #ffcc00;
@@ -881,4 +905,13 @@ svg {
 
 #chart .nvtooltip > h3 {
     font-size: 14px;
+}
+
+/* Experimental styles to correct vertical alignment in forms */
+.col-sm-10 {
+    padding-top: 7px;
+}
+
+.chkboxlbl {
+    padding-top: 4px;
 }

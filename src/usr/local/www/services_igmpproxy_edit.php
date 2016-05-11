@@ -195,14 +195,14 @@ $section->addInput(new Form_Input(
 	'Description',
 	'text',
 	$pconfig['descr']
-))->setHelp('You may enter a description here for your reference (not parsed).');
+))->setHelp('A description may be entered here for administrative reference (not parsed).');
 
 $section->addInput(new Form_Select(
 	'type',
 	'Type',
 	$pconfig['type'],
 	['upstream' => gettext('Upstream Interface'), 'downstream' => gettext('Downstream Interface')]
-))->setHelp('The upstream network interface is the outgoing interface which is responsible for communicating to available multicast data sources .' .
+))->setHelp('The upstream network interface is the outgoing interface which is responsible for communicating to available multicast data sources. ' .
 			'There can only be one upstream interface.' . '<br />' .
 			'Downstream network interfaces are the distribution	interfaces to the destination networks, where multicast clients can join groups and '.
 			'receive multicast data. One or more downstream interfaces must be configured.');

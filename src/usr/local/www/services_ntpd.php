@@ -299,7 +299,7 @@ $section->addInput(new Form_StaticText(
 	$btnaddrow
 ))->setHelp('For best results three to five servers should be configured here.' . '<br />' .
 			'The prefer option indicates that NTP should favor the use of this server more than all others.' . '<br />' .
-			'The noselect option indicates that NTP should not use this server for time, but stats for this server will be collected and displayed.');
+			'The no select option indicates that NTP should not use this server for time, but stats for this server will be collected and displayed.');
 
 $section->addInput(new Form_Input(
 	'ntporphan',
@@ -308,7 +308,7 @@ $section->addInput(new Form_Input(
 	$pconfig['ntporphan']
 ))->setHelp('Orphan mode allows the system clock to be used when no other clocks are available. ' .
 			'The number here specifies the stratum reported during orphan mode and should normally be set to a number high enough ' .
-			'to insure that any other servers available to clients are preferred over this server. (default: 12).');
+			'to insure that any other servers available to clients are preferred over this server (default: 12).');
 
 $section->addInput(new Form_Checkbox(
 	'statsgraph',
@@ -330,7 +330,7 @@ $section->addInput(new Form_Checkbox(
 	'Log system messages (default: disabled).',
 	$pconfig['logsys']
 ))->setHelp('These options enable additional messages from NTP to be written to the System Log ' .
-			'<a href="status_logs.php?logfile=ntpd">' . 'Status > System Logs > NTP' . '</a>');
+			'<a href="status_logs.php?logfile=ntpd">' . 'Status > System Logs > NTP' . '</a>.');
 
 // Statistics logging section
 $btnadv = new Form_Button(
@@ -340,7 +340,7 @@ $btnadv = new Form_Button(
 	'fa-cog'
 );
 
-$btnadv->addClass('btn-info btn-sm');
+$btnadv->setAttribute('type','button')->addClass('btn-info btn-sm');
 
 $section->addInput(new Form_StaticText(
 	'Statistics Logging',
@@ -376,19 +376,19 @@ $btnadv = new Form_Button(
 	'fa-cog'
 );
 
-$btnadv->addClass('btn-info btn-sm');
+$btnadv->setAttribute('type','button')->addClass('btn-info btn-sm');
 
 $section->addInput(new Form_StaticText(
 	'Leap seconds',
 	$btnadv
-))->setHelp('A leap second file allows NTP to advertize an upcoming leap second addition or subtraction. ' .
+))->setHelp('A leap second file allows NTP to advertise an upcoming leap second addition or subtraction. ' .
 			'Normally this is only useful if this server is a stratum 1 time server. ');
 
 $section->addInput(new Form_Textarea(
 	'leaptext',
 	null,
 	base64_decode(chunk_split($pconfig['leapsec']))
-))->setHelp('Enter Leap second configuration as text OR select a file to upload');
+))->setHelp('Enter Leap second configuration as text OR select a file to upload.');
 
 $section->addInput(new Form_Input(
 	'leapfile',
@@ -445,8 +445,6 @@ events.push(function() {
 		$('#btnadvstats').html('<i class="fa fa-cog"></i> ' + text);
 	}
 
-	$('#btnadvstats').prop('type', 'button');
-
 	$('#btnadvstats').click(function(event) {
 		show_advstats();
 	});
@@ -483,8 +481,6 @@ events.push(function() {
 		}
 		$('#btnadvleap').html('<i class="fa fa-cog"></i> ' + text);
 	}
-
-	$('#btnadvleap').prop('type', 'button');
 
 	$('#btnadvleap').click(function(event) {
 		show_advleap();

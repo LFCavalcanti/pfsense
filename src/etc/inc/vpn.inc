@@ -152,6 +152,8 @@ function vpn_ipsec_convert_to_modp($index) {
 function vpn_ipsec_configure($restart = false) {
 	global $config, $g, $sa, $sn, $p1_ealgos, $p2_ealgos, $ipsec_idhandling;
 
+	$ipsecstartlock = lock('ipsec', LOCK_EX);
+
 	/* get the automatic ping_hosts.sh ready */
 	unlink_if_exists("{$g['vardb_path']}/ipsecpinghosts");
 	touch("{$g['vardb_path']}/ipsecpinghosts");
@@ -174,6 +176,7 @@ function vpn_ipsec_configure($restart = false) {
 		/* IPSEC is off, shutdown enc interface.*/
 		mwexec("/sbin/ifconfig enc0 down");
 
+		unlock($ipsecstartlock);
 		return 0;
 	}
 
@@ -806,7 +809,7 @@ EOD;
 			if (empty($key['type'])) {
 				$key['type'] = 'PSK';
 			}
-			$pskconf .= "{$myid} {$key['ident']} : {$key['type']} 0s" . base64_encode($key['pre-shared-key']) . "\n";
+			$pskconf .= " {$key['ident']} : {$key['type']} 0s" . base64_encode($key['pre-shared-key']) . "\n";
 		}
 		unset($key);
 	}
@@ -1110,6 +1113,7 @@ EOD;
 					$authentication .= "\n\trightauth2 = xauth-generic";
 					if (!empty($ph1ent['certref'])) {
 						$authentication .= "\n\tleftcert={$certpath}/cert-{$ph1ent['ikeid']}.crt";
+						$authentication .= "\n\tleftsendcert=always";
 					}
 					if (isset($casub)) {
 						$authentication .= "\n\trightca=\"$casub\"";
@@ -1126,6 +1130,7 @@ EOD;
 					$authentication = "leftauth = pubkey\n\trightauth = pubkey";
 					if (!empty($ph1ent['certref'])) {
 						$authentication .= "\n\tleftcert={$certpath}/cert-{$ph1ent['ikeid']}.crt";
+						$authentication .= "\n\tleftsendcert=always";
 					}
 					if (isset($casub)) {
 						$authentication .= "\n\trightca=\"$casub\"";
@@ -1135,6 +1140,7 @@ EOD;
 					$authentication = "leftauth = pubkey\n\trightauth = xauth-generic";
 					if (!empty($ph1ent['certref'])) {
 						$authentication .= "\n\tleftcert={$certpath}/cert-{$ph1ent['ikeid']}.crt";
+						$authentication .= "\n\tleftsendcert=always";
 					}
 					break;
 			}
@@ -1495,6 +1501,7 @@ EOD;
 		echo "done\n";
 	}
 
+	unlock($ipsecstartlock);
 	return count($filterdns_list);
 }
 

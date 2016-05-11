@@ -96,7 +96,7 @@ $crash_report_header .= php_uname("r") . "\n";
 $crash_report_header .= php_uname("v") . "\n";
 $crash_report_header .= "\nCrash report details:\n";
 
-exec("/usr/bin/grep -vi warning /tmp/PHP_errors.log", $php_errors);
+exec("/bin/cat /tmp/PHP_errors.log", $php_errors);
 
 	if ($_POST['Submit'] == "Yes") {
 		echo gettext("Processing...");
@@ -150,12 +150,12 @@ exec("/usr/bin/grep -vi warning /tmp/PHP_errors.log", $php_errors);
 		}
 ?>
 	<div class="panel panel-default">
-		<div class="panel-heading"><h2 class="panel-title"><?=gettext("Unfortunately We Have Detected a Programming Bug")?></h2></div>
+		<div class="panel-heading"><h2 class="panel-title"><?=gettext("Unfortunately a Programming Bug has been detected")?></h2></div>
 		<div class="panel-body">
 			<div class="content">
 				<p>
-					<?=gettext("Would you like to submit the programming debug logs to the pfSense developers for inspection?")?>
-					<i><?=gettext("Please double check the contents to ensure you are comfortable sending this information before clicking Yes.")?></i>
+					<?=gettext("The programming debug logs can be submitted to the pfSense developers for inspection.")?>
+					<i><?=gettext("Please double check the contents to ensure this information is acceptable to disclose before submitting.")?></i>
 				</p>
 				<textarea readonly style="width: 100%; height: 350px;">
 					<?=$crash_reports?>
@@ -168,7 +168,7 @@ exec("/usr/bin/grep -vi warning /tmp/PHP_errors.log", $php_errors);
 					</button>
 					<button class="btn btn-warning" name="Submit" type="submit" value="No">
 						<i class="fa fa-undo"></i>
-						<?=gettext("No")?> - <?=gettext("Just delete the crash report and take me back to the Dashboard")?>
+						<?=gettext("No")?> - <?=gettext("Just delete the crash report and return to the Dashboard")?>
 					</button>
 				</form>
 			</div>

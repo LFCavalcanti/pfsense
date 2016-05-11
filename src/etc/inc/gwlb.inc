@@ -899,6 +899,7 @@ function return_gateway_groups_array() {
 	if (is_array($config['gateways']['gateway_group'])) {
 		$viplist = get_configured_vip_list();
 		foreach ($config['gateways']['gateway_group'] as $group) {
+			$gateway_groups_array[$group['name']]['descr'] = $group['descr'];
 			/* create array with group gateways members separated by tier */
 			$tiers = array();
 			$backupplan = array();
@@ -924,15 +925,15 @@ function return_gateway_groups_array() {
 					$status = $gateways_status[$gwname];
 					$gwdown = false;
 					if (stristr($status['status'], "down")) {
-						$msg = sprintf(gettext('MONITOR: %1$s is down, omitting from routing group %2$s'), $group['name'], $gwname);
+						$msg = sprintf(gettext('MONITOR: %1$s is down, omitting from routing group %2$s'), $gwname, $group['name']);
 						$gwdown = true;
 					} else if (stristr($status['status'], "loss") && strstr($group['trigger'], "loss")) {
 						/* packet loss */
-						$msg = sprintf(gettext('MONITOR: %1$s has packet loss, omitting from routing group %2$s'), $group['name'], $gwname);
+						$msg = sprintf(gettext('MONITOR: %1$s has packet loss, omitting from routing group %2$s'), $gwname, $group['name']);
 						$gwdown = true;
 					} else if (stristr($status['status'], "delay") && strstr($group['trigger'] , "latency")) {
 						/* high latency */
-						$msg = sprintf(gettext('MONITOR: %1$s has high latency, omitting from routing group %2$s'), $group['name'], $gwname);
+						$msg = sprintf(gettext('MONITOR: %1$s has high latency, omitting from routing group %2$s'), $gwname, $group['name']);
 						$gwdown = true;
 					}
 					if ($gwdown == true) {

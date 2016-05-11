@@ -251,7 +251,7 @@ if ($_POST) {
 
 	if (!$_POST['vouchersyncusername']) {
 		// Check for form errors
-		if ($_POST['charset'] && (strlen($_POST['charset'] < 2))) {
+		if ($_POST['charset'] && (strlen($_POST['charset']) < 2)) {
 			$input_errors[] = gettext("Need at least 2 characters to create vouchers.");
 		}
 		if ($_POST['charset'] && (strpos($_POST['charset'], "\"") > 0)) {
@@ -276,7 +276,7 @@ if ($_POST) {
 			$input_errors[] = gettext("This doesn't look like an RSA Private key.");
 		}
 		if ($_POST['vouchersyncdbip'] && (is_ipaddr_configured($_POST['vouchersyncdbip']))) {
-			$input_errors[] = gettext("You cannot sync the voucher database to this host (itself).");
+			$input_errors[] = gettext("The voucher database cannot be sync'd to this host (itself).");
 		}
 		if ($_POST['vouchersyncpass'] != $_POST['vouchersyncpass_confirm']) {
 			$input_errors[] = gettext("Password and confirmed password must match.");

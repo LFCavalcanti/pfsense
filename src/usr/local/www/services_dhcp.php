@@ -336,7 +336,7 @@ if (isset($_POST['save'])) {
 		}
 		if (($_POST['ddnsdomainkey'] && !$_POST['ddnsdomainkeyname']) ||
 		    ($_POST['ddnsdomainkeyname'] && !$_POST['ddnsdomainkey'])) {
-			$input_errors[] = gettext("You must specify both a valid domain key and key name.");
+			$input_errors[] = gettext("Both a valid domain key and key name must be specified.");
 		}
 		if ($_POST['domainsearchlist']) {
 			$domain_array = preg_split("/[ ;]+/", $_POST['domainsearchlist']);
@@ -350,14 +350,14 @@ if (isset($_POST['save'])) {
 
 		// Validate MACs
 		if (!empty($_POST['mac_allow']) && !validate_partial_mac_list($_POST['mac_allow'])) {
-			$input_errors[] = gettext("If you specify a mac allow list, it must contain only valid partial MAC addresses.");
+			$input_errors[] = gettext("If a mac allow list is specified, it must contain only valid partial MAC addresses.");
 		}
 		if (!empty($_POST['mac_deny']) && !validate_partial_mac_list($_POST['mac_deny'])) {
-			$input_errors[] = gettext("If you specify a mac deny list, it must contain only valid partial MAC addresses.");
+			$input_errors[] = gettext("If a mac deny list is specified, it must contain only valid partial MAC addresses.");
 		}
 
-		if (($_POST['ntp1'] && !is_ipaddrv4($_POST['ntp1'])) || ($_POST['ntp2'] && !is_ipaddrv4($_POST['ntp2']))) {
-			$input_errors[] = gettext("A valid IP address must be specified for the primary/secondary NTP servers.");
+		if (($_POST['ntp1'] && (!is_ipaddrv4($_POST['ntp1']) && !is_hostname($_POST['ntp1']))) || ($_POST['ntp2'] && (!is_ipaddrv4($_POST['ntp2']) && !is_hostname($_POST['ntp2'])))) {
+			$input_errors[] = gettext("A valid IP address or hostname must be specified for the primary/secondary NTP servers.");
 		}
 		if (($_POST['domain'] && !is_domain($_POST['domain']))) {
 			$input_errors[] = gettext("A valid domain name must be specified for the DNS domain.");
@@ -370,10 +370,10 @@ if (isset($_POST['save'])) {
 		}
 
 		if (gen_subnet($ifcfgip, $ifcfgsn) == $_POST['range_from']) {
-			$input_errors[] = gettext("You cannot use the network address in the starting subnet range.");
+			$input_errors[] = gettext("The network address cannot be used in the starting subnet range.");
 		}
 		if (gen_subnet_max($ifcfgip, $ifcfgsn) == $_POST['range_to']) {
-			$input_errors[] = gettext("You cannot use the broadcast address in the ending subnet range.");
+			$input_errors[] = gettext("The broadcast address cannot be used in the ending subnet range.");
 		}
 
 		// Disallow a range that includes the virtualip
@@ -397,7 +397,7 @@ if (isset($_POST['save'])) {
 		}
 
 		if ($_POST['staticarp'] && $noip) {
-			$input_errors[] = gettext("Cannot enable static ARP when you have static map entries without IP addresses. Ensure all static maps have IP addresses and try again.");
+			$input_errors[] = gettext("Cannot enable static ARP when there are static map entries without IP addresses. Ensure all static maps have IP addresses and try again.");
 		}
 
 		if (is_array($pconfig['numberoptions']['item'])) {
@@ -465,7 +465,7 @@ if (isset($_POST['save'])) {
 
 			/* make sure that the DHCP Relay isn't enabled on this interface */
 			if (isset($config['dhcrelay']['enable']) && (stristr($config['dhcrelay']['interface'], $if) !== false)) {
-				$input_errors[] = sprintf(gettext("You must disable the DHCP relay on the %s interface before enabling the DHCP server."), $iflist[$if]);
+				$input_errors[] = sprintf(gettext("The DHCP relay on the %s interface must be disabled before enabling the DHCP server."), $iflist[$if]);
 			}
 
 			if (is_array($a_maps)) {
@@ -679,7 +679,7 @@ if ($act == "del") {
 
 // Build an HTML table that can be inserted into a Form_StaticText element
 function build_pooltable() {
-	global $a_pools;
+	global $a_pools, $if;
 
 	$pooltbl =	'<div class="table-responsive">';
 	$pooltbl .=		'<table class="table table-striped table-hover table-condensed">';
@@ -747,7 +747,7 @@ if (isset($config['dhcrelay']['enable'])) {
 }
 
 if (is_subsystem_dirty('staticmaps')) {
-	print_apply_box(gettext("The static mapping configuration has been changed.") . "<br />" . gettext("You must apply the changes in order for them to take effect."));
+	print_apply_box(gettext("The static mapping configuration has been changed.") . "<br />" . gettext("The changes must be applied for them to take effect."));
 }
 
 /* active tabs */
@@ -891,7 +891,7 @@ if (!is_numeric($pool) && !($act == "newpool")) {
 	$section->addInput(new Form_StaticText(
 		'Add',
 		$btnaddpool
-	))->setHelp('If you need additional pools of addresses inside of this subnet outside the above Range, they may be specified here');
+	))->setHelp('If additional pools of addresses are needed inside of this subnet outside the above Range, they may be specified here.');
 
 	if (is_array($a_pools)) {
 		$section->addInput(new Form_StaticText(
@@ -922,7 +922,7 @@ for ($idx=1; $idx<=4; $idx++) {
 		'dns' . $idx,
 		($idx == 1) ? 'DNS servers':null,
 		$pconfig['dns' . $idx]
-	))->setPattern('[.a-zA-Z0-9_]+')->setAttribute('placeholder', 'DNS Server ' . $idx)->setHelp(($idx == 4) ? 'Leave blank to use the system default DNS servers, use this interface\'s IP if DNS Forwarder or Resolver is enabled, otherwise use the servers configured on the General page':'');
+	))->setPattern('[.a-zA-Z0-9_]+')->setAttribute('placeholder', 'DNS Server ' . $idx)->setHelp(($idx == 4) ? 'Leave blank to use the system default DNS servers: this interface\'s IP if DNS Forwarder or Resolver is enabled, otherwise the servers configured on the System / General Setup page.':'');
 }
 
 $form->add($section);
@@ -934,35 +934,35 @@ $section->addInput(new Form_IpAddress(
 	'Gateway',
 	$pconfig['gateway']
 ))->setPattern('[.a-zA-Z0-9_]+')
-  ->setHelp('The default is to use the IP on this interface of the firewall as the gateway. Specify an alternate gateway here if this is not the correct gateway for your network. Type "none" for no gateway assignment');
+  ->setHelp('The default is to use the IP on this interface of the firewall as the gateway. Specify an alternate gateway here if this is not the correct gateway for the network. Type "none" for no gateway assignment.');
 
 $section->addInput(new Form_Input(
 	'domain',
 	'Domain name',
 	'text',
 	$pconfig['domain']
-))->setHelp('The default is to use the domain name of this system as the default domain name provided by DHCP. You may specify an alternate domain name here');
+))->setHelp('The default is to use the domain name of this system as the default domain name provided by DHCP. An alternate domain name may be specified here.');
 
 $section->addInput(new Form_Input(
 	'domainsearchlist',
 	'Domain search list',
 	'text',
 	$pconfig['domainsearchlist']
-))->setHelp('The DHCP server can optionally provide a domain search list. Use the semicolon character as separator');
+))->setHelp('The DHCP server can optionally provide a domain search list. Use the semicolon character as separator.');
 
 $section->addInput(new Form_Input(
 	'deftime',
 	'Default lease time',
 	'number',
 	$pconfig['deftime']
-))->setHelp('This is used for clients that do not ask for a specific expiration time. The default is 7200 seconds');
+))->setHelp('This is used for clients that do not ask for a specific expiration time. The default is 7200 seconds.');
 
 $section->addInput(new Form_Input(
 	'maxtime',
 	'Maximum lease time',
 	'number',
 	$pconfig['maxtime']
-))->setHelp('This is the maximum lease time for clients that ask for a specific expiration time. The default is 86400 seconds');
+))->setHelp('This is the maximum lease time for clients that ask for a specific expiration time. The default is 86400 seconds.');
 
 if (!is_numeric($pool) && !($act == "newpool")) {
 	$section->addInput(new Form_IpAddress(
@@ -987,7 +987,7 @@ if (!is_numeric($pool) && !($act == "newpool")) {
 		'Change DHCP display lease time from UTC to local time',
 		$pconfig['dhcpleaseinlocaltime']
 	))->setHelp('By default DHCP leases are displayed in UTC time.	By checking this box DHCP lease time will be displayed in local time and set to the time zone selected.' .
-				' This will be used for all DHCP interfaces lease time');
+				' This will be used for all DHCP interfaces lease time.');
 	$section->addInput(new Form_Checkbox(
 		'statsgraph',
 		'Statistics graphs',
@@ -1004,7 +1004,7 @@ $btnadv = new Form_Button(
 	'fa-cog'
 );
 
-$btnadv->addClass('btn-info btn-sm');
+$btnadv->setAttribute('type','button')->addClass('btn-info btn-sm');
 
 $section->addInput(new Form_StaticText(
 	'Dynamic DNS',
@@ -1054,7 +1054,7 @@ $btnadv = new Form_Button(
 	'fa-cog'
 );
 
-$btnadv->addClass('btn-info btn-sm');
+$btnadv->setAttribute('type','button')->addClass('btn-info btn-sm');
 
 $section->addInput(new Form_StaticText(
 	'MAC address control',
@@ -1083,7 +1083,7 @@ $btnadv = new Form_Button(
 	'fa-cog'
 );
 
-$btnadv->addClass('btn-info btn-sm');
+$btnadv->setAttribute('type','button')->addClass('btn-info btn-sm');
 
 $section->addInput(new Form_StaticText(
 	'NTP',
@@ -1094,13 +1094,13 @@ $section->addInput(new Form_IpAddress(
 	'ntp1',
 	'NTP Server 1',
 	$pconfig['ntp1']
-));
+))->setPattern('[.a-zA-Z0-9_]+');
 
 $section->addInput(new Form_IpAddress(
 	'ntp2',
 	'NTP Server 2',
 	$pconfig['ntp2']
-));
+))->setPattern('[.a-zA-Z0-9_]+');
 
 // Advanced TFTP
 $btnadv = new Form_Button(
@@ -1110,7 +1110,7 @@ $btnadv = new Form_Button(
 	'fa-cog'
 );
 
-$btnadv->addClass('btn-info btn-sm');
+$btnadv->setAttribute('type','button')->addClass('btn-info btn-sm');
 
 $section->addInput(new Form_StaticText(
 	'TFTP',
@@ -1121,7 +1121,7 @@ $section->addInput(new Form_IpAddress(
 	'tftp',
 	'TFTP Server',
 	$pconfig['tftp']
-))->setHelp('Leave blank to disable.  Enter a full hostname or IP for the TFTP server')->setPattern('[.a-zA-Z0-9_]+');
+))->setHelp('Leave blank to disable.  Enter a full hostname or IP for the TFTP server.')->setPattern('[.a-zA-Z0-9_]+');
 
 // Advanced LDAP
 $btnadv = new Form_Button(
@@ -1131,7 +1131,7 @@ $btnadv = new Form_Button(
 	'fa-cog'
 );
 
-$btnadv->addClass('btn-info btn-sm');
+$btnadv->setAttribute('type','button')->addClass('btn-info btn-sm');
 
 $section->addInput(new Form_StaticText(
 	'LDAP',
@@ -1153,7 +1153,7 @@ $btnadv = new Form_Button(
 	'fa-cog'
 );
 
-$btnadv->addClass('btn-info btn-sm');
+$btnadv->setAttribute('type','button')->addClass('btn-info btn-sm');
 
 $section->addInput(new Form_StaticText(
 	'Additional BOOTP/DHCP Options',
@@ -1167,8 +1167,8 @@ $section->addClass('adnlopts');
 
 $section->addInput(new Form_StaticText(
 	null,
-	'<div class="alert alert-info"> ' . gettext('Enter the DHCP option number and the value for each item you would like to include in the DHCP lease information.') . ' ' .
-	sprintf(gettext('For a list of available options please visit this %1$s URL%2$s'), '<a href="http://www.iana.org/assignments/bootp-dhcp-parameters/" target="_blank">', '</a></div>')
+	'<div class="alert alert-info"> ' . gettext('Enter the DHCP option number and the value for each item to include in the DHCP lease information.') . ' ' .
+	sprintf(gettext('For a list of available options please visit this %1$s URL%2$s'), '<a href="http://www.iana.org/assignments/bootp-dhcp-parameters/" target="_blank">', '</a>.</div>')
 ));
 
 if (!$pconfig['numberoptions']) {
@@ -1276,8 +1276,8 @@ $section->addInput(new Form_Input(
 	'UEFI 64 bit file name',
 	'text',
 	$pconfig['filename64']
-))->setHelp('You need both a filename and a boot server configured for this to work! ' .
-			'You will need all three filenames and a boot server configured for UEFI to work! ');
+))->setHelp('Both a filename and a boot server must be configured for this to work! ' .
+			'All three filenames and a configured boot server are necessary for UEFI to work! ');
 
 $section->addInput(new Form_Input(
 	'rootpath',
@@ -1426,8 +1426,6 @@ events.push(function() {
 		$('#btnadvdns').html('<i class="fa fa-cog"></i> ' + text);
 	}
 
-	$('#btnadvdns').prop('type', 'button');
-
 	$('#btnadvdns').click(function(event) {
 		show_advdns();
 	});
@@ -1462,8 +1460,6 @@ events.push(function() {
 		}
 		$('#btnadvmac').html('<i class="fa fa-cog"></i> ' + text);
 	}
-
-	$('#btnadvmac').prop('type', 'button');
 
 	$('#btnadvmac').click(function(event) {
 		show_advmac();
@@ -1500,8 +1496,6 @@ events.push(function() {
 		$('#btnadvntp').html('<i class="fa fa-cog"></i> ' + text);
 	}
 
-	$('#btnadvntp').prop('type', 'button');
-
 	$('#btnadvntp').click(function(event) {
 		show_advntp();
 	});
@@ -1535,8 +1529,6 @@ events.push(function() {
 		}
 		$('#btnadvtftp').html('<i class="fa fa-cog"></i> ' + text);
 	}
-
-	$('#btnadvtftp').prop('type', 'button');
 
 	$('#btnadvtftp').click(function(event) {
 		show_advtftp();
@@ -1572,8 +1564,6 @@ events.push(function() {
 		$('#btnadvldap').html('<i class="fa fa-cog"></i> ' + text);
 	}
 
-	$('#btnadvldap').prop('type', 'button');
-
 	$('#btnadvldap').click(function(event) {
 		show_advldap();
 	});
@@ -1608,8 +1598,6 @@ events.push(function() {
 		}
 		$('#btnadvopts').html('<i class="fa fa-cog"></i> ' + text);
 	}
-
-	$('#btnadvopts').prop('type', 'button');
 
 	$('#btnadvopts').click(function(event) {
 		show_advopts();
